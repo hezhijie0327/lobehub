@@ -94,12 +94,14 @@ export const useSend = () => {
 
     if (!shouldContinue) return;
 
+    // Wait for message to be sent before clearing input
     if (params.onlyAddAIMessage) {
-      addAIMessage();
+      await addAIMessage();
     } else {
-      sendMessage({ files: fileList, message: inputMessage, ...params });
+      await sendMessage({ files: fileList, message: inputMessage, ...params });
     }
 
+    // Only clear input after message is successfully sent
     clearChatUploadFileList();
     mainInputEditor.setExpand(false);
     mainInputEditor.clearContent();
@@ -244,7 +246,7 @@ export const useSendGroupMessage = () => {
           : '';
       const messageWithMentions = `${inputMessage}${mentionText}`.trim();
 
-      sendGroupMessage({
+      await sendGroupMessage({
         files: fileList,
         groupId: store.activeId,
         message: messageWithMentions,
@@ -252,6 +254,7 @@ export const useSendGroupMessage = () => {
         ...params,
       });
 
+      // Only clear input after message is successfully sent
       clearChatUploadFileList();
       mainInputEditor.setExpand(false);
       mainInputEditor.clearContent();
