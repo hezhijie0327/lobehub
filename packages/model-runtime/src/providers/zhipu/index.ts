@@ -62,7 +62,7 @@ export const params = {
         model,
         stream,
         thinking: thinking ? { type: thinking.type } : undefined,
-        tool_stream: stream && /^glm-4\.(6|7)/.test(model) ? true : undefined,
+        tool_stream: stream && /^glm-4\.(6|7)$/.test(model) ? true : undefined,
         tools: zhipuTools,
       } as any;
     },
