@@ -68,7 +68,13 @@ export class LobeAnthropicAI implements LobeRuntimeAI {
     this.client = new Anthropic({
       apiKey,
       baseURL,
-      defaultHeaders: { ...defaultHeaders, 'anthropic-beta': betaHeaders },
+      defaultHeaders: {
+        ...defaultHeaders,
+        'anthropic-beta': betaHeaders,
+        ...(process.env.ENABLE_AIHUBMIX_APP_CODE === '1' && {
+          'APP-Code': 'LobeHub',
+        }),
+      },
       ...res,
     });
     this.baseURL = this.client.baseURL;

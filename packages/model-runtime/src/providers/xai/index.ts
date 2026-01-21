@@ -51,6 +51,13 @@ export const LobeXAI = createOpenAICompatibleRuntime({
       } as any;
     },
   },
+  constructorOptions: {
+    defaultHeaders: {
+      ...(process.env.ENABLE_AIHUBMIX_APP_CODE === '1' && {
+        'APP-Code': 'LobeHub',
+      }),
+    },
+  },
   debug: {
     chatCompletion: () => process.env.DEBUG_XAI_CHAT_COMPLETION === '1',
   },
