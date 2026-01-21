@@ -184,12 +184,23 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
         apiKey: options.apiKey?.trim() || DEFAULT_API_KEY,
         baseURL: options.baseURL?.trim() || DEFAULT_BASE_URL,
       };
-      const { apiKey, baseURL = DEFAULT_BASE_URL, ...res } = _options;
+      const { apiKey, baseURL = DEFAULT_BASE_URL, defaultHeaders, ...res } = _options;
       this._options = _options as ConstructorOptions<T>;
 
       if (!apiKey) throw AgentRuntimeError.createError(ErrorType?.invalidAPIKey);
 
-      const initOptions = { apiKey, baseURL, ...constructorOptions, ...res };
+      const initOptions = {
+        apiKey,
+        baseURL,
+        defaultHeaders: {
+          ...defaultHeaders,
+          ...(baseURL === 'https://aihubmix.com/v1' && {
+            'APP-Code': 'LobeHub',
+          }),
+        },
+        ...constructorOptions,
+        ...res,
+      };
 
       // if the custom client is provided, use it as client
       if (customClient?.createClient) {

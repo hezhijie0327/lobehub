@@ -130,7 +130,7 @@ export class LobeGoogleAI implements LobeRuntimeAI {
           baseUrl: baseURL,
           headers: {
             ...defaultHeaders,
-            ...(process.env.ENABLE_AIHUBMIX_APP_CODE === '1' && {
+            ...(baseURL === 'https://aihubmix.com/gemini' && {
               'APP-Code': 'LobeHub',
             }),
           },
