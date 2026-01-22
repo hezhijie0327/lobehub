@@ -1,6 +1,10 @@
 'use client';
 
-import { BRANDING_NAME, ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
+import {
+  BRANDING_NAME,
+  ENABLE_BUSINESS_FEATURES,
+  ENABLE_BUSINESS_FEATURES_PATCH,
+} from '@lobechat/business-const';
 import { DEFAULT_SETTINGS } from '@lobechat/config';
 import { Button, Form, type FormGroupItemType, Icon } from '@lobehub/ui';
 import { App, Switch } from 'antd';
@@ -115,7 +119,9 @@ const AdvancedActions = () => {
         layout: 'horizontal',
         minWidth: undefined,
       },
-      ...(ENABLE_BUSINESS_FEATURES ? [renderExportButtonFormItem()] : []),
+      ...(ENABLE_BUSINESS_FEATURES || ENABLE_BUSINESS_FEATURES_PATCH
+        ? [renderExportButtonFormItem()]
+        : []),
       {
         children: (
           <Button danger onClick={handleClear} type={'primary'}>
