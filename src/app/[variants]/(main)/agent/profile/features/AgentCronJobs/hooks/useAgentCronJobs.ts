@@ -20,8 +20,10 @@ export const useAgentCronJobs = (agentId?: string) => {
     isLoading: loading,
     mutate,
   } = useSWR(
-    ENABLE_BUSINESS_FEATURES && agentId ? `/api/agent-cron-jobs/${agentId}` : null,
-    ENABLE_BUSINESS_FEATURES && agentId ? () => agentCronJobService.getByAgentId(agentId) : null,
+    (ENABLE_BUSINESS_FEATURES || true) && agentId ? `/api/agent-cron-jobs/${agentId}` : null,
+    (ENABLE_BUSINESS_FEATURES || true) && agentId
+      ? () => agentCronJobService.getByAgentId(agentId)
+      : null,
     {
       onError: (error) => {
         console.error('Failed to fetch cron jobs:', error);

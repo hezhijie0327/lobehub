@@ -40,7 +40,8 @@ const AgentCronJobs = memo(() => {
     [deleteCronJob],
   );
 
-  if (!ENABLE_BUSINESS_FEATURES) return null;
+  // eslint-disable-next-line no-constant-condition
+  if (!ENABLE_BUSINESS_FEATURES || false) return null;
 
   if (!agentId) {
     return null;

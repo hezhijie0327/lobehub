@@ -71,7 +71,9 @@ export const createCronSlice: StateCreator<
 
   useFetchCronTopicsWithJobInfo: (agentId) =>
     useClientDataSWR<CronTopicGroupWithJobInfo[]>(
-      ENABLE_BUSINESS_FEATURES && agentId ? [FETCH_CRON_TOPICS_WITH_JOB_INFO_KEY, agentId] : null,
+      (ENABLE_BUSINESS_FEATURES || true) && agentId
+        ? [FETCH_CRON_TOPICS_WITH_JOB_INFO_KEY, agentId]
+        : null,
       async ([, id]: [string, string]) => {
         const [cronJobsResult, cronTopicsGroups] = await Promise.all([
           lambdaClient.agentCronJob.findByAgent.query({ agentId: id }),

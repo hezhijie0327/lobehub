@@ -93,7 +93,8 @@ const ProfileEditor = memo(() => {
             {t('startConversation')}
           </Button>
           <AgentPublishButton />
-          {ENABLE_BUSINESS_FEATURES && (
+          {/* eslint-disable-next-line no-constant-condition */}
+          {(ENABLE_BUSINESS_FEATURES || true) && (
             <Button icon={Clock} onClick={handleCreateCronJob}>
               {t('agentCronJobs.addJob')}
             </Button>
@@ -104,7 +105,8 @@ const ProfileEditor = memo(() => {
       {/* Main Content: Prompt Editor */}
       <EditorCanvas />
       {/* Agent Cron Jobs Display (only show if jobs exist) */}
-      {ENABLE_BUSINESS_FEATURES && <AgentCronJobs />}
+      {/* eslint-disable-next-line no-constant-condition */}
+      {(ENABLE_BUSINESS_FEATURES || true) && <AgentCronJobs />}
       {/* Advanced Settings Modal */}
       <AgentSettings />
     </>

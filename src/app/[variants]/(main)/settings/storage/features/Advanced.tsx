@@ -115,7 +115,8 @@ const AdvancedActions = () => {
         layout: 'horizontal',
         minWidth: undefined,
       },
-      ...(ENABLE_BUSINESS_FEATURES ? [renderExportButtonFormItem()] : []),
+      // eslint-disable-next-line no-constant-condition
+      ...(ENABLE_BUSINESS_FEATURES || true ? [renderExportButtonFormItem()] : []),
       {
         children: (
           <Button danger onClick={handleClear} type={'primary'}>
