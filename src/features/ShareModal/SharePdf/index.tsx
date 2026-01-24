@@ -13,7 +13,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAgentStore } from '@/store/agent';
 import { agentSelectors } from '@/store/agent/selectors';
 import { useChatStore } from '@/store/chat';
-import { chatSelectors, topicSelectors } from '@/store/chat/selectors';
+import { dbMessageSelectors, topicSelectors } from '@/store/chat/selectors';
 
 import { generateMarkdown } from '../ShareText/template';
 import { type FieldType } from '../ShareText/type';
@@ -73,7 +73,7 @@ const SharePdf = memo((props: { message?: UIChatMessage }) => {
 
   // Use the same data gathering logic as ShareText
   const [systemRole] = useAgentStore((s) => [agentSelectors.currentAgentSystemRole(s)]);
-  const messages = useChatStore(chatSelectors.activeBaseChats, isEqual);
+  const messages = useChatStore(dbMessageSelectors.activeDbMessages, isEqual);
   const topic = useChatStore(topicSelectors.currentActiveTopic, isEqual);
   const activeId = useChatStore((s) => s.activeAgentId);
   const topicId = useChatStore((s) => s.activeTopicId);

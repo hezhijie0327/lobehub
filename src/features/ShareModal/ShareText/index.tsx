@@ -12,7 +12,10 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAgentStore } from '@/store/agent';
 import { agentSelectors } from '@/store/agent/selectors';
 import { useChatStore } from '@/store/chat';
-import { displayMessageSelectors, topicSelectors } from '@/store/chat/selectors';
+import {
+  dbMessageSelectors,
+  topicSelectors,
+} from '@/store/chat/selectors';
 
 import { styles } from '../style';
 import Preview from './Preview';
@@ -66,7 +69,7 @@ const ShareText = memo(() => {
   ];
 
   const [systemRole] = useAgentStore((s) => [agentSelectors.currentAgentSystemRole(s)]);
-  const messages = useChatStore(displayMessageSelectors.activeDisplayMessages, isEqual);
+  const messages = useChatStore(dbMessageSelectors.activeDbMessages, isEqual);
   const topic = useChatStore(topicSelectors.currentActiveTopic, isEqual);
 
   const title = topic?.title || t('shareModal.exportTitle');

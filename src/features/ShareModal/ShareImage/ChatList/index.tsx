@@ -1,13 +1,14 @@
 import { Flexbox } from '@lobehub/ui';
+import isEqual from 'fast-deep-equal';
 import { memo } from 'react';
 
 import { ConversationProvider, MessageItem } from '@/features/Conversation';
 import { useChatStore } from '@/store/chat';
-import { chatSelectors } from '@/store/chat/selectors';
+import { dbMessageSelectors } from '@/store/chat/selectors';
 
 const ChatList = memo(() => {
-  const ids = useChatStore(chatSelectors.mainDisplayChatIDs);
-  const messages = useChatStore(chatSelectors.activeBaseChats);
+  const messages = useChatStore(dbMessageSelectors.activeDbMessages, isEqual);
+  const ids = messages.map((m) => m.id);
   const agentId = useChatStore((s) => s.activeAgentId);
   const topicId = useChatStore((s) => s.activeTopicId);
 

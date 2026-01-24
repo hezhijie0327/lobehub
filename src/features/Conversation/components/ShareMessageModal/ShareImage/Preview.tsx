@@ -79,6 +79,9 @@ const Preview = memo<PreviewProps>(
                   title: displayTitle,
                 }}
                 id={message.id}
+                message={message.content}
+                placement={message.role === 'user' ? 'right' : 'left'}
+                time={message.createdAt}
               />
             </Flexbox>
             {withFooter ? (
