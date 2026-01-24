@@ -23,7 +23,18 @@ const ShareText = memo<ShareTextProps>(({ item }) => {
   const { t } = useTranslation(['chat', 'common']);
   const { message } = App.useApp();
 
-  const messages = [item];
+  // Handle assistantGroup messages - content might be in children
+  let contentItem = item;
+  if (item.role === 'assistantGroup' && item.children && item.children.length > 0) {
+    // For assistantGroup, use the last child's content
+    const lastChild = item.children.at(-1);
+    contentItem = {
+      ...item,
+      content: lastChild?.content || item.content,
+    };
+  }
+
+  const messages = [contentItem];
   const topic = useChatStore(topicSelectors.currentActiveTopic, isEqual);
 
   const title = topic?.title || t('shareModal.exportTitle');

@@ -36,10 +36,22 @@ const Preview = memo<PreviewProps>(
 
     const { t } = useTranslation('chat');
 
+    // Handle assistantGroup messages - content might be in children
+    let content = message.content;
+    if (message.role === 'assistantGroup' && message.children && message.children.length > 0) {
+      // For assistantGroup, use the last child's content
+      const lastChild = message.children.at(-1);
+      content = lastChild?.content || message.content;
+    }
+
     // Debug: Log to see what we're working with
     console.log('ShareMessage Preview Details:', {
       agentMeta,
+      childrenCount: message.children?.length,
       displayTitle: agentMeta.title || title,
+      extractedContent: content,
+      extractedContentLength: content?.length,
+      hasChildren: !!message.children,
       messageAgentId: message.agentId,
       messageContent: message.content,
       messageContentLength: message.content?.length,
@@ -90,7 +102,7 @@ const Preview = memo<PreviewProps>(
                   backgroundColor: agentMeta.backgroundColor,
                   title: displayTitle,
                 }}
-                message={message.content}
+                message={content}
                 placement={message.role === 'user' ? 'right' : 'left'}
                 showAvatar={true}
                 showTitle={false}
