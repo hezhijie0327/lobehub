@@ -1,14 +1,13 @@
 import { OFFICIAL_DOMAIN } from '@lobechat/const';
 import { type UIChatMessage } from '@lobechat/types';
 import { ModelTag } from '@lobehub/icons';
-import { Avatar, Flexbox } from '@lobehub/ui';
+import { Avatar, Flexbox, Markdown } from '@lobehub/ui';
 import { ChatHeaderTitle } from '@lobehub/ui/chat';
 import { cx } from 'antd-style';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ProductLogo } from '@/components/Branding';
-import { ConversationProvider, MessageItem } from '@/features/Conversation';
 import PluginTag from '@/features/PluginTag';
 import { useAgentStore } from '@/store/agent';
 import { agentSelectors } from '@/store/agent/selectors';
@@ -43,22 +42,6 @@ const Preview = memo<PreviewProps>(
       const lastChild = message.children.at(-1);
       content = lastChild?.content || message.content;
     }
-
-    // Debug: Log to see what we're working with
-    console.log('ShareMessage Preview Details:', {
-      agentMeta,
-      childrenCount: message.children?.length,
-      displayTitle: agentMeta.title || title,
-      extractedContent: content,
-      extractedContentLength: content?.length,
-      hasChildren: !!message.children,
-      messageAgentId: message.agentId,
-      messageContent: message.content,
-      messageContentLength: message.content?.length,
-      messageId: message.id,
-      messageRole: message.role,
-      placement: message.role === 'user' ? 'right' : 'left',
-    });
 
     const displayTitle = agentMeta.title || title;
     const displayDesc = isBuiltinAgent ? t('inbox.desc') : agentMeta.description;
@@ -96,20 +79,46 @@ const Preview = memo<PreviewProps>(
               style={{ paddingTop: 24, position: 'relative' }}
               width={'100%'}
             >
-              <ConversationProvider
-                context={{ agentId: message.agentId || '', topicId: message.topicId }}
-                hasInitMessages={true}
-                messages={[message]}
-                skipFetch={true}
+              <Flexbox
+                height={'100%'}
+                style={{ paddingTop: 24, position: 'relative' }}
+                width={'100%'}
               >
-                <Flexbox
-                  height={'100%'}
-                  style={{ padding: 24, pointerEvents: 'none', position: 'relative' }}
-                  width={'100%'}
-                >
-                  <MessageItem id={message.id} index={0} />
+                {/* User avatar on the right */}
+                {message.role === 'user' && (
+                  <Flexbox align={'flex-end'} gap={8} paddingBlock={8}>
+                    <Avatar
+                      avatar={agentMeta.avatar}
+                      background={agentMeta.backgroundColor}
+                      shape={'square'}
+                      size={28}
+                      title={displayTitle}
+                    />
+                  </Flexbox>
+                )}
+
+                {/* Assistant avatar on the left and content */}
+                <Flexbox gap={8} paddingBlock={8}>
+                  {message.role !== 'user' && (
+                    <Avatar
+                      avatar={agentMeta.avatar}
+                      background={agentMeta.backgroundColor}
+                      shape={'square'}
+                      size={28}
+                      title={displayTitle}
+                    />
+                  )}
+                  <Flexbox
+                    style={{
+                      maxWidth: '100%',
+                      overflow: 'hidden',
+                      width: message.role === 'user' ? undefined : '100%',
+                    }}
+                  >
+                    <Markdown variant="chat">{content}</Markdown>
+                  </Flexbox>
                 </Flexbox>
-              </ConversationProvider>
+              </Flexbox>
             </Flexbox>
             {withFooter ? (
               <Flexbox align={'center'} className={styles.footer} gap={4}>
