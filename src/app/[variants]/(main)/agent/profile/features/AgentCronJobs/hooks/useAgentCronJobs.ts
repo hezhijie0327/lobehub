@@ -1,4 +1,4 @@
-import { ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
+import { APPLY_OSS_FEATURES_PATCH, ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
 import { message } from 'antd';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,8 +20,10 @@ export const useAgentCronJobs = (agentId?: string) => {
     isLoading: loading,
     mutate,
   } = useSWR(
-    (ENABLE_BUSINESS_FEATURES || true) && agentId ? `/api/agent-cron-jobs/${agentId}` : null,
-    (ENABLE_BUSINESS_FEATURES || true) && agentId
+    (ENABLE_BUSINESS_FEATURES || APPLY_OSS_FEATURES_PATCH) && agentId
+      ? `/api/agent-cron-jobs/${agentId}`
+      : null,
+    (ENABLE_BUSINESS_FEATURES || APPLY_OSS_FEATURES_PATCH) && agentId
       ? () => agentCronJobService.getByAgentId(agentId)
       : null,
     {

@@ -4,3 +4,4 @@ export * from './llm';
 export * from './url';
 
 export const ENABLE_BUSINESS_FEATURES = false;
+export const APPLY_OSS_FEATURES_PATCH = true;

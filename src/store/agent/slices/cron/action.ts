@@ -1,4 +1,4 @@
-import { ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
+import { APPLY_OSS_FEATURES_PATCH, ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
 import type { SWRResponse } from 'swr';
 import { type StateCreator } from 'zustand/vanilla';
 
@@ -71,7 +71,7 @@ export const createCronSlice: StateCreator<
 
   useFetchCronTopicsWithJobInfo: (agentId) =>
     useClientDataSWR<CronTopicGroupWithJobInfo[]>(
-      (ENABLE_BUSINESS_FEATURES || true) && agentId
+      (ENABLE_BUSINESS_FEATURES || APPLY_OSS_FEATURES_PATCH) && agentId
         ? [FETCH_CRON_TOPICS_WITH_JOB_INFO_KEY, agentId]
         : null,
       async ([, id]: [string, string]) => {

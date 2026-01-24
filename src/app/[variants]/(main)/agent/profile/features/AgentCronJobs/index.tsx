@@ -1,6 +1,6 @@
 'use client';
 
-import { ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
+import { APPLY_OSS_FEATURES_PATCH, ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
 import { Flexbox } from '@lobehub/ui';
 import { Typography } from 'antd';
 import { Clock } from 'lucide-react';
@@ -40,8 +40,7 @@ const AgentCronJobs = memo(() => {
     [deleteCronJob],
   );
 
-  // eslint-disable-next-line no-constant-condition
-  if (!ENABLE_BUSINESS_FEATURES || false) return null;
+  if (!ENABLE_BUSINESS_FEATURES && !APPLY_OSS_FEATURES_PATCH) return null;
 
   if (!agentId) {
     return null;

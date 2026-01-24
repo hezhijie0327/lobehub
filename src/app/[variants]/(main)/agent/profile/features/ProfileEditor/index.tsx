@@ -1,6 +1,6 @@
 'use client';
 
-import { ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
+import { APPLY_OSS_FEATURES_PATCH, ENABLE_BUSINESS_FEATURES } from '@lobechat/business-const';
 import { Button, Flexbox } from '@lobehub/ui';
 import { Divider } from 'antd';
 import { useTheme } from 'antd-style';
@@ -93,8 +93,7 @@ const ProfileEditor = memo(() => {
             {t('startConversation')}
           </Button>
           <AgentPublishButton />
-          {/* eslint-disable-next-line no-constant-condition */}
-          {(ENABLE_BUSINESS_FEATURES || true) && (
+          {(ENABLE_BUSINESS_FEATURES || APPLY_OSS_FEATURES_PATCH) && (
             <Button icon={Clock} onClick={handleCreateCronJob}>
               {t('agentCronJobs.addJob')}
             </Button>
@@ -105,8 +104,7 @@ const ProfileEditor = memo(() => {
       {/* Main Content: Prompt Editor */}
       <EditorCanvas />
       {/* Agent Cron Jobs Display (only show if jobs exist) */}
-      {/* eslint-disable-next-line no-constant-condition */}
-      {(ENABLE_BUSINESS_FEATURES || true) && <AgentCronJobs />}
+      {(ENABLE_BUSINESS_FEATURES || APPLY_OSS_FEATURES_PATCH) && <AgentCronJobs />}
       {/* Advanced Settings Modal */}
       <AgentSettings />
     </>
