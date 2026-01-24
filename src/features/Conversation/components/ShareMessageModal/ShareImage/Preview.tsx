@@ -8,7 +8,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ProductLogo } from '@/components/Branding';
-import { ChatItem } from '@/features/Conversation/ChatItem';
+import { ConversationProvider, MessageItem } from '@/features/Conversation';
 import PluginTag from '@/features/PluginTag';
 import { useAgentStore } from '@/store/agent';
 import { agentSelectors } from '@/store/agent/selectors';
@@ -96,18 +96,20 @@ const Preview = memo<PreviewProps>(
               style={{ paddingTop: 24, position: 'relative' }}
               width={'100%'}
             >
-              <ChatItem
-                avatar={{
-                  avatar: agentMeta.avatar,
-                  backgroundColor: agentMeta.backgroundColor,
-                  title: displayTitle,
-                }}
-                message={content}
-                placement={message.role === 'user' ? 'right' : 'left'}
-                showAvatar={true}
-                showTitle={false}
-                time={message.createdAt}
-              />
+              <ConversationProvider
+                context={{ agentId: message.agentId || '', topicId: message.topicId }}
+                hasInitMessages={true}
+                messages={[message]}
+                skipFetch={true}
+              >
+                <Flexbox
+                  height={'100%'}
+                  style={{ padding: 24, pointerEvents: 'none', position: 'relative' }}
+                  width={'100%'}
+                >
+                  <MessageItem id={message.id} index={0} />
+                </Flexbox>
+              </ConversationProvider>
             </Flexbox>
             {withFooter ? (
               <Flexbox align={'center'} className={styles.footer} gap={4}>
