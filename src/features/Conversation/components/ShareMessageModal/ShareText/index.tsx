@@ -39,7 +39,13 @@ const ShareText = memo<ShareTextProps>(({ item }) => {
 
   const title = topic?.title || t('shareModal.exportTitle');
   const content = generateMarkdown({
+    includeTool: true,
+    includeUser: true,
     messages,
+    systemRole: '',
+    title,
+    withRole: true,
+    withSystemRole: false,
   }).replaceAll('\n\n\n', '\n');
 
   const isMobile = useIsMobile();

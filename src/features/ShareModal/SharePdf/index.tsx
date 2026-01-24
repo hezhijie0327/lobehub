@@ -3,7 +3,6 @@ import { Button, Form, type FormItemProps } from '@lobehub/ui';
 import { Flexbox } from '@lobehub/ui';
 import { App, Switch } from 'antd';
 import { cx } from 'antd-style';
-import isEqual from 'fast-deep-equal';
 import { DownloadIcon, FileText } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -73,12 +72,17 @@ const SharePdf = memo((props: { message?: UIChatMessage }) => {
 
   // Use the same data gathering logic as ShareText
   const [systemRole] = useAgentStore((s) => [agentSelectors.currentAgentSystemRole(s)]);
-  const messages = useChatStore(dbMessageSelectors.activeDbMessages, isEqual);
-  const topic = useChatStore(topicSelectors.currentActiveTopic, isEqual);
-  const activeId = useChatStore((s) => s.activeAgentId);
-  const topicId = useChatStore((s) => s.activeTopicId);
+  const [topic, activeId, topicId, allMessages] = useChatStore((s) => [
+    topicSelectors.currentActiveTopic(s),
+    s.activeAgentId,
+    s.activeTopicId,
+    dbMessageSelectors.activeDbMessages(s),
+  ]);
 
   const title = topic?.title || t('shareModal.exportTitle');
+
+  // For single message sharing, use the provided message
+  const messages = outerMessage ? [outerMessage] : allMessages;
 
   const { generatePdf, downloadPdf, pdfData, loading, error } = usePdfGeneration();
 
