@@ -36,6 +36,18 @@ const Preview = memo<PreviewProps>(
 
     const { t } = useTranslation('chat');
 
+    // Debug: Log to see what we're working with
+    console.log('ShareMessage Preview Details:', {
+      agentMeta,
+      displayTitle: agentMeta.title || title,
+      messageAgentId: message.agentId,
+      messageContent: message.content,
+      messageContentLength: message.content?.length,
+      messageId: message.id,
+      messageRole: message.role,
+      placement: message.role === 'user' ? 'right' : 'left',
+    });
+
     const displayTitle = agentMeta.title || title;
     const displayDesc = isBuiltinAgent ? t('inbox.desc') : agentMeta.description;
 
