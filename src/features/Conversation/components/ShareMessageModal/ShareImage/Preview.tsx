@@ -78,9 +78,10 @@ const Preview = memo<PreviewProps>(
                   backgroundColor: agentMeta.backgroundColor,
                   title: displayTitle,
                 }}
-                id={message.id}
                 message={message.content}
                 placement={message.role === 'user' ? 'right' : 'left'}
+                showAvatar={true}
+                showTitle={false}
                 time={message.createdAt}
               />
             </Flexbox>

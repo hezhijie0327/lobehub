@@ -194,9 +194,12 @@ export const useChatItemContextMenu = ({
           createStore={() => {
             const state = storeApi.getState();
             return createStore({
-              context: state.context,
+              context: {
+                ...state.context,
+                agentId: item.agentId || state.context.agentId,
+              },
               hooks: state.hooks,
-              skipFetch: state.skipFetch,
+              skipFetch: true,
             });
           }}
         >
