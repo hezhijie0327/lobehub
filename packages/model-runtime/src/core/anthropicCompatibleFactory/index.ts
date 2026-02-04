@@ -368,12 +368,23 @@ export const createAnthropicCompatibleRuntime = <T extends Record<string, any> =
         apiKey: options.apiKey?.trim() || DEFAULT_API_KEY,
         baseURL: options.baseURL?.trim() || DEFAULT_BASE_URL,
       };
-      const { apiKey, baseURL = DEFAULT_BASE_URL, ...rest } = resolvedOptions;
+      const { apiKey, baseURL = DEFAULT_BASE_URL, defaultHeaders, ...rest } = resolvedOptions;
       this._options = resolvedOptions as ConstructorOptions<T>;
 
       if (!apiKey) throw AgentRuntimeError.createError(ErrorType.invalidAPIKey);
 
-      const initOptions = { apiKey, baseURL, ...constructorOptions, ...rest };
+      const initOptions = {
+        apiKey,
+        baseURL,
+        defaultHeaders: {
+          ...defaultHeaders,
+          ...(baseURL === 'https://aihubmix.com' && {
+            'APP-Code': 'LobeHub',
+          }),
+        },
+        ...constructorOptions,
+        ...rest,
+      };
 
       if (customClient?.createClient) {
         this.client = customClient.createClient(initOptions as ConstructorOptions<T>);
