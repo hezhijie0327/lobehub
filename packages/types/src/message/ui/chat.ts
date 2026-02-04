@@ -25,6 +25,7 @@ export type UIMessageRoleType =
   | 'tool'
   | 'task'
   | 'tasks'
+  | 'groupTasks'
   | 'supervisor'
   | 'assistantGroup'
   | 'agentCouncil'
@@ -105,6 +106,11 @@ export interface UIChatMessage {
    */
   children?: AssistantContentBlock[];
   chunksList?: ChatFileChunk[];
+  /**
+   * All messages within a compression group (role: 'compressedGroup')
+   * Used for rendering expanded view with conversation-flow parsing
+   */
+  compressedMessages?: UIChatMessage[];
   content: string;
   createdAt: number;
   error?: ChatMessageError | null;
@@ -180,6 +186,7 @@ export interface UIChatMessage {
   /**
    * Task messages for role='tasks' virtual message
    * Contains aggregated task messages with same parentId
+   * Also used to store task execution messages (intermediate steps) from polling
    */
   tasks?: UIChatMessage[];
   threadId?: string | null;

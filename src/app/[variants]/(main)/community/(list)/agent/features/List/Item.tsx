@@ -56,6 +56,7 @@ const styles = createStaticStyles(({ css, cssVar }) => {
 const AssistantItem = memo<DiscoverAssistantItem>(
   ({
     createdAt,
+    updatedAt,
     author,
     avatar,
     title,
@@ -65,7 +66,7 @@ const AssistantItem = memo<DiscoverAssistantItem>(
     tokenUsage,
     pluginCount,
     knowledgeCount,
-    installCount,
+    forkCount,
     backgroundColor,
     userName,
     type,
@@ -202,7 +203,7 @@ const AssistantItem = memo<DiscoverAssistantItem>(
             {description}
           </Text>
           <TokenTag
-            installCount={installCount}
+            forkCount={forkCount}
             knowledgeCount={knowledgeCount}
             pluginCount={pluginCount}
             tokenUsage={tokenUsage}
@@ -225,7 +226,7 @@ const AssistantItem = memo<DiscoverAssistantItem>(
               <Icon icon={ClockIcon} size={14} />
               <PublishedTime
                 className={styles.secondaryDesc}
-                date={createdAt}
+                date={updatedAt || createdAt}
                 template={'MMM DD, YYYY'}
               />
             </Flexbox>

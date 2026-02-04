@@ -10,7 +10,7 @@ export * from './plugins';
 export * from './providers';
 
 export enum DiscoverTab {
-  Assistants = 'assistant',
+  Assistants = 'agent',
   GroupAgents = 'group_agent',
   Home = 'home',
   Mcp = 'mcp',
@@ -67,6 +67,14 @@ export interface DiscoverUserInfo {
 export interface DiscoverUserProfile {
   agentGroups?: DiscoverGroupAgentItem[];
   agents: DiscoverAssistantItem[];
+  /**
+   * Agent groups favorited by the user
+   */
+  favoriteAgentGroups?: DiscoverGroupAgentItem[];
+  /**
+   * Agents favorited by the user
+   */
+  favoriteAgents?: DiscoverAssistantItem[];
   /**
    * Agent groups forked by the user
    */

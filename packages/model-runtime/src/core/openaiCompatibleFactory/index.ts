@@ -73,6 +73,7 @@ export interface OpenAICompatibleFactoryOptions<T extends Record<string, any> = 
   baseURL?: string;
   chatCompletion?: {
     excludeUsage?: boolean;
+    forceImageBase64?: boolean;
     handleError?: (
       error: any,
       options: ConstructorOptions<T>,
@@ -398,7 +399,9 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
           this.baseURL = targetBaseURL;
         }
 
-        const messages = await convertOpenAIMessages(postPayload.messages);
+        const messages = await convertOpenAIMessages(postPayload.messages, {
+          forceImageBase64: chatCompletion?.forceImageBase64,
+        });
 
         let response: Stream<OpenAI.Chat.Completions.ChatCompletionChunk>;
 
@@ -888,7 +891,9 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
       delete res.frequency_penalty;
       delete res.presence_penalty;
 
-      const input = await convertOpenAIResponseInputs(messages as any);
+      const input = await convertOpenAIResponseInputs(messages as any, {
+        forceImageBase64: chatCompletion?.forceImageBase64,
+      });
 
       const isStreaming = payload.stream !== false;
       log(
@@ -1017,7 +1022,9 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
 
       if (shouldUseResponses) {
         log('calling responses.create for tool calling');
-        const input = await convertOpenAIResponseInputs(messages as any);
+        const input = await convertOpenAIResponseInputs(messages as any, {
+          forceImageBase64: chatCompletion?.forceImageBase64,
+        });
 
         const res = await this.client.responses.create(
           {

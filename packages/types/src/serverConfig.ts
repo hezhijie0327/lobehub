@@ -10,7 +10,7 @@ import {
   UserSystemAgentConfig,
 } from './user/settings';
 
-export type GlobalMemoryLayer = 'context' | 'experience' | 'identity' | 'preference';
+export type GlobalMemoryLayer = 'activity' | 'context' | 'experience' | 'identity' | 'preference';
 
 export interface MemoryAgentPublicConfig {
   baseURL?: string;
@@ -49,6 +49,7 @@ export type ServerLanguageModel = Partial<Record<GlobalLLMProviderKey, ServerMod
 export interface GlobalServerConfig {
   aiProvider: ServerLanguageModel;
   defaultAgent?: PartialDeep<UserDefaultAgent>;
+  disableEmailPassword?: boolean;
   enableBusinessFeatures?: boolean;
   enableEmailVerification?: boolean;
   enableKlavis?: boolean;

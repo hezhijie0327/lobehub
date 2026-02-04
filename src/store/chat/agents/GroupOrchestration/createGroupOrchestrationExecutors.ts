@@ -8,6 +8,7 @@ import type {
   SupervisorInstructionCallSupervisor,
   SupervisorInstructionDelegate,
   SupervisorInstructionExecAsyncTask,
+  SupervisorInstructionExecClientAsyncTask,
   SupervisorInstructionParallelCallAgents,
 } from '@lobechat/agent-runtime';
 import type { ConversationContext, UIChatMessage } from '@lobechat/types';
@@ -235,13 +236,14 @@ export const createGroupOrchestrationExecutors = (
     parallel_call_agents: async (instruction, state): Promise<GroupOrchestrationExecutorOutput> => {
       const {
         agentIds,
+        disableTools,
         instruction: agentInstruction,
         toolMessageId,
       } = (instruction as SupervisorInstructionParallelCallAgents).payload;
 
       const sessionLogId = `${state.operationId}:parallel_call_agents`;
       log(
-        `[${sessionLogId}] Broadcasting to agents: ${agentIds.join(', ')}, instruction: ${agentInstruction}, toolMessageId: ${toolMessageId}`,
+        `[${sessionLogId}] Broadcasting to agents: ${agentIds.join(', ')}, instruction: ${agentInstruction}, toolMessageId: ${toolMessageId}, disableTools: ${disableTools}`,
       );
 
       const messages = getMessages();
@@ -279,10 +281,12 @@ export const createGroupOrchestrationExecutors = (
       // - messageContext keeps the group's main conversation context (for message storage)
       // - subAgentId specifies which agent's config to use for each agent
       // - toolMessageId is used as parentMessageId so agent responses are children of the tool message
+      // - disableTools prevents broadcast agents from calling tools (expected behavior for broadcast)
       await Promise.all(
         agentIds.map(async (agentId) => {
           await get().internal_execAgentRuntime({
             context: { ...messageContext, subAgentId: agentId },
+            disableTools,
             messages: messagesWithInstruction,
             parentMessageId: toolMessageId,
             parentMessageType: 'tool',
@@ -355,7 +359,7 @@ export const createGroupOrchestrationExecutors = (
 
     /**
      * exec_async_task Executor
-     * Executes an async task for an agent using aiAgentService with polling
+     * Executes an async task for an agent using aiAgentService with polling (server-side)
      *
      * Flow:
      * 1. Create a task message (role: 'task') as placeholder
@@ -365,14 +369,17 @@ export const createGroupOrchestrationExecutors = (
      *
      * Returns: task_completed result
      */
-    exec_async_task: async (instruction, state): Promise<GroupOrchestrationExecutorOutput> => {
-      const { agentId, task, timeout, title, toolMessageId } = (
-        instruction as SupervisorInstructionExecAsyncTask
+    exec_async_task: async (
+      supervisorInstruction,
+      state,
+    ): Promise<GroupOrchestrationExecutorOutput> => {
+      const { agentId, instruction, timeout, title, toolMessageId } = (
+        supervisorInstruction as SupervisorInstructionExecAsyncTask
       ).payload;
 
       const sessionLogId = `${state.operationId}:exec_async_task`;
       log(
-        `[${sessionLogId}] Executing async task for agent: ${agentId}, task: ${task}, timeout: ${timeout}`,
+        `[${sessionLogId}] Executing async task for agent: ${agentId}, instruction: ${instruction}, timeout: ${timeout}`,
       );
 
       const { groupId, topicId } = messageContext;
@@ -396,7 +403,7 @@ export const createGroupOrchestrationExecutors = (
             agentId,
             content: '',
             groupId,
-            metadata: { instruction: task, taskTitle: title },
+            metadata: { instruction, taskTitle: title },
             parentId: toolMessageId,
             role: 'task',
             topicId,
@@ -423,7 +430,7 @@ export const createGroupOrchestrationExecutors = (
         const createResult = await aiAgentService.execSubAgentTask({
           agentId,
           groupId,
-          instruction: task,
+          instruction,
           parentMessageId: taskMessageId,
           title,
           topicId,
@@ -583,6 +590,238 @@ export const createGroupOrchestrationExecutors = (
     },
 
     /**
+     * exec_client_async_task Executor
+     * Executes an async task for an agent on the client (desktop only)
+     * Used when task requires local tools like file system or shell commands
+     *
+     * Flow:
+     * 1. Create a task message (role: 'task') as placeholder
+     * 2. Create Thread via API (to get threadId for operation context)
+     * 3. Execute using internal_execAgentRuntime (client-side with local tools access)
+     * 4. Update Thread status via API on completion
+     * 5. Update task message content with result
+     *
+     * Returns: task_completed result
+     */
+    exec_client_async_task: async (
+      supervisorInstruction,
+      state,
+    ): Promise<GroupOrchestrationExecutorOutput> => {
+      const { agentId, instruction, title, toolMessageId } = (
+        supervisorInstruction as SupervisorInstructionExecClientAsyncTask
+      ).payload;
+
+      const sessionLogId = `${state.operationId}:exec_client_async_task`;
+      log(`[${sessionLogId}] Executing client-side async task for agent: ${agentId}`);
+
+      const { groupId, topicId } = messageContext;
+
+      if (!groupId || !topicId) {
+        log(`[${sessionLogId}] No valid context, cannot execute client async task`);
+        return {
+          events: [] as GroupOrchestrationEvent[],
+          newState: state,
+          result: {
+            payload: { agentId, error: 'No valid context available', success: false },
+            type: 'task_completed',
+          },
+        };
+      }
+
+      try {
+        // 1. Create task message as placeholder
+        const taskMessageResult = await get().optimisticCreateMessage(
+          {
+            agentId,
+            content: '',
+            groupId,
+            metadata: { instruction, taskTitle: title },
+            parentId: toolMessageId,
+            role: 'task',
+            topicId,
+          },
+          { operationId: state.operationId },
+        );
+
+        if (!taskMessageResult) {
+          console.error(`[${sessionLogId}] Failed to create task message`);
+          return {
+            events: [] as GroupOrchestrationEvent[],
+            newState: state,
+            result: {
+              payload: { agentId, error: 'Failed to create task message', success: false },
+              type: 'task_completed',
+            },
+          };
+        }
+
+        const taskMessageId = taskMessageResult.id;
+        log(`[${sessionLogId}] Created task message: ${taskMessageId}`);
+
+        // 2. Create Thread via API first (to get threadId for operation context)
+        // Use Group-specific API that handles different agentIds in thread context
+        const threadResult = await aiAgentService.createClientGroupAgentTaskThread({
+          groupId: groupId!,
+          instruction,
+          parentMessageId: taskMessageId,
+          subAgentId: agentId,
+          title,
+          topicId,
+        });
+
+        if (!threadResult.success) {
+          log(`[${sessionLogId}] Failed to create client task thread`);
+          await get().optimisticUpdateMessageContent(
+            taskMessageId,
+            'Failed to create task thread',
+            undefined,
+            { operationId: state.operationId },
+          );
+          return {
+            events: [] as GroupOrchestrationEvent[],
+            newState: state,
+            result: {
+              payload: { agentId, error: 'Failed to create client task thread', success: false },
+              type: 'task_completed',
+            },
+          };
+        }
+
+        const { threadId, userMessageId, threadMessages, messages } = threadResult;
+        log(
+          `[${sessionLogId}] Created thread: ${threadId}, userMessageId: ${userMessageId}, threadMessages: ${threadMessages.length}`,
+        );
+
+        // 3. Build sub-task ConversationContext (uses threadId for isolation)
+        const subContext: ConversationContext = {
+          agentId,
+          groupId,
+          topicId,
+          threadId,
+          scope: 'thread',
+        };
+
+        // 4. Create a child operation for task execution (now with threadId)
+        const { operationId: taskOperationId } = get().startOperation({
+          type: 'execClientTask',
+          context: subContext,
+          parentOperationId: orchestrationOperationId,
+          metadata: {
+            startTime: Date.now(),
+            taskDescription: title,
+            taskMessageId,
+            executionMode: 'client',
+          },
+        });
+
+        // 5. Sync messages to store
+        // Update main chat messages with latest taskDetail status (use messageContext for Group)
+        const mainKey = messageMapKey(messageContext);
+        log(
+          `[${sessionLogId}] replaceMessages (main): messages=%d, key=%s, context=%O`,
+          messages.length,
+          mainKey,
+          messageContext,
+        );
+        get().replaceMessages(messages, { context: messageContext });
+
+        // Update thread messages
+        const threadKey = messageMapKey(subContext);
+        log(
+          `[${sessionLogId}] replaceMessages (thread): threadMessages=%d, key=%s, subContext=%O`,
+          threadMessages.length,
+          threadKey,
+          subContext,
+        );
+        get().replaceMessages(threadMessages, { context: subContext });
+
+        // 6. Execute using internal_execAgentRuntime (client-side with local tools access)
+        log(`[${sessionLogId}] Starting client-side AgentRuntime execution`);
+
+        const runtimeResult = await get().internal_execAgentRuntime({
+          context: subContext,
+          messages: threadMessages,
+          parentMessageId: userMessageId, // Use server-returned userMessageId
+          parentMessageType: 'user',
+          operationId: taskOperationId,
+          parentOperationId: orchestrationOperationId,
+          isSubTask: true, // Disable lobe-gtd tools to prevent nested sub-tasks
+        });
+
+        log(`[${sessionLogId}] Client-side AgentRuntime execution completed`);
+
+        // 7. Get execution result from sub-task messages
+        const subMessageKey = messageMapKey(subContext);
+        const subTaskMessages = get().dbMessagesMap[subMessageKey] || [];
+        const lastAssistant = subTaskMessages.findLast((m) => m.role === 'assistant');
+        const resultContent = lastAssistant?.content || 'Task completed';
+
+        log(`[${sessionLogId}] Got result from sub-task: ${resultContent.length} chars`);
+
+        // Count tool calls
+        const totalToolCalls = subTaskMessages.filter((m) => m.role === 'tool').length;
+
+        // Get usage data from runtime result
+        const { usage, cost } = runtimeResult || {};
+
+        // 8. Update task message with result
+        await get().optimisticUpdateMessageContent(
+          taskMessageId,
+          resultContent,
+          {
+            metadata: {
+              cost: cost?.total,
+              duration: usage?.llm?.processingTimeMs,
+              totalInputTokens: usage?.llm?.tokens?.input,
+              totalOutputTokens: usage?.llm?.tokens?.output,
+              totalTokens: usage?.llm?.tokens?.total,
+            },
+          },
+          { operationId: state.operationId },
+        );
+
+        // 9. Update Thread status via API with metadata
+        await aiAgentService.updateClientTaskThreadStatus({
+          threadId,
+          completionReason: 'done',
+          resultContent,
+          metadata: {
+            totalCost: cost?.total,
+            totalMessages: subTaskMessages.length,
+            totalTokens: usage?.llm?.tokens?.total,
+            totalToolCalls,
+          },
+        });
+
+        // 10. Complete operation
+        get().completeOperation(taskOperationId);
+
+        return {
+          events: [] as GroupOrchestrationEvent[],
+          newState: state,
+          result: {
+            payload: { agentId, result: resultContent, success: true },
+            type: 'task_completed',
+          },
+        };
+      } catch (error) {
+        log(`[${sessionLogId}] Error executing client async task: ${error}`);
+        return {
+          events: [] as GroupOrchestrationEvent[],
+          newState: state,
+          result: {
+            payload: {
+              agentId,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              success: false,
+            },
+            type: 'task_completed',
+          },
+        };
+      }
+    },
+
+    /**
      * batch_exec_async_tasks Executor
      * Executes multiple async tasks for agents in parallel using aiAgentService with polling
      *
@@ -628,9 +867,9 @@ export const createGroupOrchestrationExecutors = (
       interface TaskTracker {
         agentId: string;
         error?: string;
+        instruction: string;
         result?: string;
         status: 'pending' | 'running' | 'completed' | 'failed';
-        task: string;
         taskMessageId?: string;
         threadId?: string;
         timeout: number;
@@ -640,7 +879,7 @@ export const createGroupOrchestrationExecutors = (
       const taskTrackers: TaskTracker[] = tasks.map((t) => ({
         agentId: t.agentId,
         status: 'pending',
-        task: t.task,
+        instruction: t.instruction,
         timeout: t.timeout || 1_800_000, // Default 30 minutes
         title: t.title,
       }));
@@ -654,8 +893,9 @@ export const createGroupOrchestrationExecutors = (
               {
                 agentId: tracker.agentId,
                 content: '',
+                createdAt: Date.now() + index,
                 groupId,
-                metadata: { instruction: tracker.task, taskTitle: tracker.title },
+                metadata: { instruction: tracker.instruction, taskTitle: tracker.title },
                 parentId: toolMessageId,
                 role: 'task',
                 topicId,
@@ -689,7 +929,7 @@ export const createGroupOrchestrationExecutors = (
             const createResult = await aiAgentService.execSubAgentTask({
               agentId: tracker.agentId,
               groupId,
-              instruction: tracker.task,
+              instruction: tracker.instruction,
               parentMessageId: tracker.taskMessageId,
               title: tracker.title,
               topicId,
@@ -776,48 +1016,48 @@ export const createGroupOrchestrationExecutors = (
               }
 
               switch (status.status) {
-              case 'completed': {
-                tracker.status = 'completed';
-                tracker.result = status.result;
-                log(`[${taskLogId}] Task completed successfully`);
-                if (status.result) {
+                case 'completed': {
+                  tracker.status = 'completed';
+                  tracker.result = status.result;
+                  log(`[${taskLogId}] Task completed successfully`);
+                  if (status.result) {
+                    await get().optimisticUpdateMessageContent(
+                      tracker.taskMessageId,
+                      status.result,
+                      undefined,
+                      { operationId: state.operationId },
+                    );
+                  }
+
+                  break;
+                }
+                case 'failed': {
+                  tracker.status = 'failed';
+                  tracker.error = status.error;
+                  console.error(`[${taskLogId}] Task failed: ${status.error}`);
                   await get().optimisticUpdateMessageContent(
                     tracker.taskMessageId,
-                    status.result,
+                    `Task failed: ${status.error}`,
                     undefined,
                     { operationId: state.operationId },
                   );
+
+                  break;
                 }
-              
-              break;
-              }
-              case 'failed': {
-                tracker.status = 'failed';
-                tracker.error = status.error;
-                console.error(`[${taskLogId}] Task failed: ${status.error}`);
-                await get().optimisticUpdateMessageContent(
-                  tracker.taskMessageId,
-                  `Task failed: ${status.error}`,
-                  undefined,
-                  { operationId: state.operationId },
-                );
-              
-              break;
-              }
-              case 'cancel': {
-                tracker.status = 'failed';
-                tracker.error = 'Task was cancelled';
-                log(`[${taskLogId}] Task was cancelled`);
-                await get().optimisticUpdateMessageContent(
-                  tracker.taskMessageId,
-                  'Task was cancelled',
-                  undefined,
-                  { operationId: state.operationId },
-                );
-              
-              break;
-              }
-              // No default
+                case 'cancel': {
+                  tracker.status = 'failed';
+                  tracker.error = 'Task was cancelled';
+                  log(`[${taskLogId}] Task was cancelled`);
+                  await get().optimisticUpdateMessageContent(
+                    tracker.taskMessageId,
+                    'Task was cancelled',
+                    undefined,
+                    { operationId: state.operationId },
+                  );
+
+                  break;
+                }
+                // No default
               }
 
               // Check individual task timeout

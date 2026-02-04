@@ -74,11 +74,12 @@ export const getServerGlobalConfig = async () => {
     defaultAgent: {
       config: parseAgentConfig(DEFAULT_AGENT_CONFIG),
     },
+    disableEmailPassword: authEnv.AUTH_DISABLE_EMAIL_PASSWORD,
     enableBusinessFeatures: ENABLE_BUSINESS_FEATURES,
     enableEmailVerification: authEnv.AUTH_EMAIL_VERIFICATION,
     enableKlavis: !!klavisEnv.KLAVIS_API_KEY,
     enableLobehubSkill: !!(appEnv.MARKET_TRUSTED_CLIENT_SECRET && appEnv.MARKET_TRUSTED_CLIENT_ID),
-    enableMagicLink: authEnv.ENABLE_MAGIC_LINK,
+    enableMagicLink: authEnv.AUTH_ENABLE_MAGIC_LINK,
     enableMarketTrustedClient: !!(
       appEnv.MARKET_TRUSTED_CLIENT_SECRET && appEnv.MARKET_TRUSTED_CLIENT_ID
     ),
@@ -90,9 +91,7 @@ export const getServerGlobalConfig = async () => {
     memory: {
       userMemory: cleanObject(getPublicMemoryExtractionConfig()),
     },
-    oAuthSSOProviders: authEnv.NEXT_PUBLIC_ENABLE_BETTER_AUTH
-      ? getBetterAuthSSOProviders()
-      : authEnv.NEXT_AUTH_SSO_PROVIDERS.trim().split(/[,，]/),
+    oAuthSSOProviders: getBetterAuthSSOProviders(),
     systemAgent: parseSystemAgent(appEnv.SYSTEM_AGENT),
     telemetry: {
       langfuse: langfuseEnv.ENABLE_LANGFUSE,

@@ -134,7 +134,7 @@ const publishOrCreateGroupSchema = z.object({
     })
     .optional(),
   description: z.string(),
-  identifier: z.string().optional(),
+  identifier: z.string().nullish(), // Allow null or undefined
   memberAgents: z.array(memberAgentSchema),
   name: z.string(),
   visibility: z.enum(['public', 'private', 'internal']).optional(),
@@ -200,12 +200,69 @@ export const agentGroupRouter = router({
       }
     }),
 
-  
+  /**
+   * Deprecate agent group
+   * POST /market/agent-group/:identifier/deprecate
+   */
+  deprecateAgentGroup: agentGroupProcedure
+    .input(z.object({ identifier: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      log('deprecateAgentGroup input: %O', input);
+
+      try {
+        const deprecateUrl = `${MARKET_BASE_URL}/api/v1/agent-groups/${input.identifier}/deprecate`;
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+
+        const userInfo = ctx.marketUserInfo as TrustedClientUserInfo | undefined;
+        const accessToken = (ctx as { marketOidcAccessToken?: string }).marketOidcAccessToken;
+
+        if (userInfo) {
+          const trustedClientToken = generateTrustedClientToken(userInfo);
+          if (trustedClientToken) {
+            headers['x-lobe-trust-token'] = trustedClientToken;
+          }
+        }
+
+        if (!headers['x-lobe-trust-token'] && accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch(deprecateUrl, {
+          headers,
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          log(
+            'Deprecate agent group failed: %s %s - %s',
+            response.status,
+            response.statusText,
+            errorText,
+          );
+          throw new Error(`Failed to deprecate agent group: ${response.statusText}`);
+        }
+
+        log('Deprecate agent group success');
+        return { success: true };
+      } catch (error) {
+        log('Error deprecating agent group: %O', error);
+        throw new TRPCError({
+          cause: error,
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to deprecate agent group',
+        });
+      }
+    }),
+
   /**
    * Fork an agent group
    * POST /market/agent-group/:identifier/fork
    */
-forkAgentGroup: agentGroupProcedure
+  forkAgentGroup: agentGroupProcedure
     .input(
       z.object({
         identifier: z.string(),
@@ -278,13 +335,11 @@ forkAgentGroup: agentGroupProcedure
       }
     }),
 
-  
-  
-/**
+  /**
    * Get the fork source of an agent group
    * GET /market/agent-group/:identifier/fork-source
    */
-getAgentGroupForkSource: agentGroupProcedure
+  getAgentGroupForkSource: agentGroupProcedure
     .input(z.object({ identifier: z.string() }))
     .query(async ({ input, ctx }) => {
       log('getAgentGroupForkSource input: %O', input);
@@ -338,14 +393,11 @@ getAgentGroupForkSource: agentGroupProcedure
       }
     }),
 
-  
-  
-
-/**
+  /**
    * Get all forks of an agent group
    * GET /market/agent-group/:identifier/forks
    */
-getAgentGroupForks: agentGroupProcedure
+  getAgentGroupForks: agentGroupProcedure
     .input(z.object({ identifier: z.string() }))
     .query(async ({ input, ctx }) => {
       log('getAgentGroupForks input: %O', input);
@@ -399,15 +451,71 @@ getAgentGroupForks: agentGroupProcedure
       }
     }),
 
-  
-  
-/**
+  /**
+   * Publish agent group
+   * POST /market/agent-group/:identifier/publish
+   */
+  publishAgentGroup: agentGroupProcedure
+    .input(z.object({ identifier: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      log('publishAgentGroup input: %O', input);
+
+      try {
+        const publishUrl = `${MARKET_BASE_URL}/api/v1/agent-groups/${input.identifier}/publish`;
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+
+        const userInfo = ctx.marketUserInfo as TrustedClientUserInfo | undefined;
+        const accessToken = (ctx as { marketOidcAccessToken?: string }).marketOidcAccessToken;
+
+        if (userInfo) {
+          const trustedClientToken = generateTrustedClientToken(userInfo);
+          if (trustedClientToken) {
+            headers['x-lobe-trust-token'] = trustedClientToken;
+          }
+        }
+
+        if (!headers['x-lobe-trust-token'] && accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch(publishUrl, {
+          headers,
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          log(
+            'Publish agent group failed: %s %s - %s',
+            response.status,
+            response.statusText,
+            errorText,
+          );
+          throw new Error(`Failed to publish agent group: ${response.statusText}`);
+        }
+
+        log('Publish agent group success');
+        return { success: true };
+      } catch (error) {
+        log('Error publishing agent group: %O', error);
+        throw new TRPCError({
+          cause: error,
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to publish agent group',
+        });
+      }
+    }),
+
+  /**
    * Unified publish or create agent group flow
    * 1. Check if identifier exists and if current user is owner
    * 2. If not owner or no identifier, create new group
    * 3. Create new version for the group if updating
    */
-publishOrCreate: agentGroupProcedure
+  publishOrCreate: agentGroupProcedure
     .input(publishOrCreateGroupSchema)
     .mutation(async ({ input, ctx }) => {
       log('publishOrCreate input: %O', input);
@@ -491,6 +599,64 @@ publishOrCreate: agentGroupProcedure
           cause: error,
           code: 'INTERNAL_SERVER_ERROR',
           message: error instanceof Error ? error.message : 'Failed to publish group',
+        });
+      }
+    }),
+
+  /**
+   * Unpublish agent group
+   * POST /market/agent-group/:identifier/unpublish
+   */
+  unpublishAgentGroup: agentGroupProcedure
+    .input(z.object({ identifier: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      log('unpublishAgentGroup input: %O', input);
+
+      try {
+        const unpublishUrl = `${MARKET_BASE_URL}/api/v1/agent-groups/${input.identifier}/unpublish`;
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+
+        const userInfo = ctx.marketUserInfo as TrustedClientUserInfo | undefined;
+        const accessToken = (ctx as { marketOidcAccessToken?: string }).marketOidcAccessToken;
+
+        if (userInfo) {
+          const trustedClientToken = generateTrustedClientToken(userInfo);
+          if (trustedClientToken) {
+            headers['x-lobe-trust-token'] = trustedClientToken;
+          }
+        }
+
+        if (!headers['x-lobe-trust-token'] && accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch(unpublishUrl, {
+          headers,
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          log(
+            'Unpublish agent group failed: %s %s - %s',
+            response.status,
+            response.statusText,
+            errorText,
+          );
+          throw new Error(`Failed to unpublish agent group: ${response.statusText}`);
+        }
+
+        log('Unpublish agent group success');
+        return { success: true };
+      } catch (error) {
+        log('Error unpublishing agent group: %O', error);
+        throw new TRPCError({
+          cause: error,
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to unpublish agent group',
         });
       }
     }),

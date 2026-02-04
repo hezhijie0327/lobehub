@@ -11,14 +11,22 @@ import { cssVar } from 'antd-style';
 import { Cloud, Server, Undo2Icon } from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import urlJoin from 'url-join';
 
+import { OFFICIAL_SITE } from '@/const/url';
 import { isDesktop } from '@/const/version';
 import UserInfo from '@/features/User/UserInfo';
 import { remoteServerService } from '@/services/electron/remoteServer';
+import { electronSystemService } from '@/services/electron/system';
 import { useElectronStore } from '@/store/electron';
 import { setDesktopAutoOidcFirstOpenHandled } from '@/utils/electron/autoOidc';
 
 import LobeMessage from '../components/LobeMessage';
+
+const LEGACY_LOCAL_DB_MIGRATION_GUIDE_URL = urlJoin(
+  OFFICIAL_SITE,
+  '/docs/usage/migrate-from-local-database',
+);
 
 // 登录方式类型
 type LoginMethod = 'cloud' | 'selfhost';
@@ -62,6 +70,8 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
   const [remoteError, setRemoteError] = useState<string | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showEndpoint, setShowEndpoint] = useState(false);
+  const [hasLegacyLocalDb, setHasLegacyLocalDb] = useState(false);
+  const [localRemainingSeconds, setLocalRemainingSeconds] = useState<number | null>(null);
 
   const [
     dataSyncConfig,
@@ -83,8 +93,23 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
     s.disconnectRemoteServer,
   ]);
 
-  // Ensure remote server config is loaded early (desktop only hook)
   useDataSyncConfig();
+
+  useEffect(() => {
+    if (!isDesktop) return;
+
+    let mounted = true;
+    electronSystemService
+      .hasLegacyLocalDb()
+      .then((value) => {
+        if (mounted) setHasLegacyLocalDb(value);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const isCloudAuthed = !!dataSyncConfig?.active && dataSyncConfig.storageMode === 'cloud';
   const isSelfHostAuthed = !!dataSyncConfig?.active && dataSyncConfig.storageMode === 'selfHost';
@@ -198,6 +223,33 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
     }
   });
 
+  // Sync local countdown from authProgress
+  useEffect(() => {
+    if (authProgress) {
+      const seconds = Math.max(
+        0,
+        Math.ceil((authProgress.maxPollTime - authProgress.elapsed) / 1000),
+      );
+      setLocalRemainingSeconds(seconds);
+    } else {
+      setLocalRemainingSeconds(null);
+    }
+  }, [authProgress]);
+
+  // Decrement local countdown every second for smooth UI updates
+  useEffect(() => {
+    if (localRemainingSeconds === null || localRemainingSeconds <= 0) return;
+
+    const timer = setTimeout(() => {
+      setLocalRemainingSeconds((prev) => {
+        if (prev === null || prev <= 0) return prev;
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [localRemainingSeconds]);
+
   const handleCancelAuth = async () => {
     setRemoteError(null);
     clearRemoteServerSyncError();
@@ -240,10 +292,14 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
     }
 
     if (cloudLoginStatus === 'error') {
+      const errorMessage = remoteError?.toLowerCase().includes('timed out')
+        ? t('screen5.errors.timedOut')
+        : remoteError || t('authResult.failed.desc');
+
       return (
-        <Flexbox style={{ width: '100%' }}>
+        <Flexbox gap={16} style={{ width: '100%' }}>
           <Alert
-            description={remoteError || t('authResult.failed.desc')}
+            description={errorMessage}
             title={t('authResult.failed.title')}
             type={'secondary'}
           />
@@ -264,9 +320,6 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
       const phaseText = t(authorizationPhaseI18nKeyMap[authProgress?.phase ?? 'browser_opened'], {
         defaultValue: t('screen5.actions.signingIn'),
       });
-      const remainingSeconds = authProgress
-        ? Math.max(0, Math.ceil((authProgress.maxPollTime - authProgress.elapsed) / 1000))
-        : null;
 
       return (
         <Flexbox gap={8} style={{ width: '100%' }}>
@@ -277,10 +330,10 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
             {phaseText}
           </Text>
           <Flexbox align={'center'} horizontal justify={'space-between'}>
-            {remainingSeconds !== null ? (
+            {localRemainingSeconds !== null ? (
               <Text style={{ color: cssVar.colorTextDescription }} type={'secondary'}>
                 {t('screen5.auth.remaining', {
-                  time: remainingSeconds,
+                  time: localRemainingSeconds,
                 })}
               </Text>
             ) : (
@@ -341,10 +394,14 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
     }
 
     if (selfhostLoginStatus === 'error') {
+      const errorMessage = remoteError?.toLowerCase().includes('timed out')
+        ? t('screen5.errors.timedOut')
+        : remoteError || t('authResult.failed.desc');
+
       return (
         <Flexbox gap={16} style={{ width: '100%' }}>
           <Alert
-            description={remoteError || t('authResult.failed.desc')}
+            description={errorMessage}
             title={t('authResult.failed.title')}
             type={'secondary'}
           />
@@ -359,9 +416,6 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
       const phaseText = t(authorizationPhaseI18nKeyMap[authProgress?.phase ?? 'browser_opened'], {
         defaultValue: t('screen5.actions.connecting'),
       });
-      const remainingSeconds = authProgress
-        ? Math.max(0, Math.ceil((authProgress.maxPollTime - authProgress.elapsed) / 1000))
-        : null;
 
       return (
         <Flexbox gap={8} style={{ width: '100%' }}>
@@ -379,10 +433,10 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
             {phaseText}
           </Text>
           <Flexbox align={'center'} horizontal justify={'space-between'}>
-            {remainingSeconds !== null ? (
+            {localRemainingSeconds !== null ? (
               <Text style={{ color: cssVar.colorTextDescription }} type={'secondary'}>
                 {t('screen5.auth.remaining', {
-                  time: remainingSeconds,
+                  time: localRemainingSeconds,
                 })}
               </Text>
             ) : (
@@ -405,7 +459,14 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
             if (!isDesktop) return;
             e.preventDefault();
             const { electronSystemService } = await import('@/services/electron/system');
-            await electronSystemService.showContextMenu('edit');
+            const input = e.target as HTMLInputElement;
+            const selectionText = input.value.slice(
+              input.selectionStart || 0,
+              input.selectionEnd || 0,
+            );
+            await electronSystemService.showContextMenu('editor', {
+              selectionText: selectionText || undefined,
+            });
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -441,6 +502,19 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
 
       <Flexbox align={'flex-start'} gap={16} style={{ width: '100%' }} width={'100%'}>
         {renderCloudContent()}
+        <Flexbox horizontal justify={'center'} style={{ width: '100%' }}>
+          {hasLegacyLocalDb && (
+            <Button
+              onClick={() =>
+                electronSystemService.openExternalLink(LEGACY_LOCAL_DB_MIGRATION_GUIDE_URL)
+              }
+              style={{ padding: 0 }}
+              type={'link'}
+            >
+              {t('screen5.legacyLocalDb.link', 'Migrate legacy local database')}
+            </Button>
+          )}
+        </Flexbox>
         {!showEndpoint ? (
           <Center width={'100%'}>
             <Button
@@ -460,6 +534,7 @@ const LoginStep = memo<LoginStepProps>(({ onBack, onNext }) => {
                 OR
               </Text>
             </Divider>
+
             {/* Self-host 选项 */}
             {renderSelfhostContent()}
           </>

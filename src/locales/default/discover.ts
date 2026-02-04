@@ -5,6 +5,7 @@ export default {
   'assistant.like': 'Like',
   'assistant.likeFailed': 'Failed to like',
   'assistant.likeSuccess': 'Liked',
+  'assistant.underReview': 'Under Review',
   'assistant.unfavorite': 'Unsave',
   'assistant.unfavoriteFailed': 'Failed to unsave',
   'assistant.unfavoriteSuccess': 'Unsaved',
@@ -59,14 +60,10 @@ export default {
   'assistants.more': 'More',
   'assistants.plugins': 'Integrated Skills',
   'assistants.recentSubmits': 'Recent Updates',
-  'assistants.sorts.createdAt': 'Recently Published',
-  'assistants.sorts.identifier': 'Agent ID',
-  'assistants.sorts.knowledgeCount': 'Libraries',
-  'assistants.sorts.myown': 'View My Agents',
-  'assistants.sorts.pluginCount': 'Skills',
+  'assistants.sorts.haveSkills': 'Skilled',
+  'assistants.sorts.mostUsage': 'Most Usage',
   'assistants.sorts.recommended': 'Recommended',
-  'assistants.sorts.title': 'Agent Name',
-  'assistants.sorts.tokenUsage': 'Token Usage',
+  'assistants.sorts.updatedAt': 'Recently Updated',
   'assistants.status.archived.reasons.official':
     'The platform removed this Agent due to security, policy, or other concerns.',
   'assistants.status.archived.reasons.owner': 'The creator archived or removed this Agent.',
@@ -171,6 +168,8 @@ export default {
   'fork.viewAllForks': 'View all forks',
 
   'groupAgents.tag': 'Group',
+
+  'groupAgents.underReview': 'Under Review',
 
   'home.communityAgents': 'Community Agents',
 
@@ -891,6 +890,18 @@ export default {
   'user.noForkedAgents': 'No forked Agents yet',
 
   'user.publishedAgents': 'Created Agents',
+
+  'user.publishedGroups': 'Created Groups',
+
+  'user.searchPlaceholder': 'Search by name or description...',
+
+  'user.statusFilter.all': 'All',
+  'user.statusFilter.archived': 'Archived',
+  'user.statusFilter.deprecated': 'Deprecated',
+  'user.statusFilter.favorite': 'Favorite',
+  'user.statusFilter.forked': 'Forked',
+  'user.statusFilter.published': 'Published',
+  'user.statusFilter.unpublished': 'Under Review',
 
   'user.tabs.favorites': 'Favorites',
 
