@@ -18,11 +18,6 @@ const nextConfig = defineConfig({
         ],
       }
     : undefined,
-  // Include ffmpeg binary for video webhook processing
-  // refs: https://github.com/vercel-labs/ffmpeg-on-vercel
-  outputFileTracingIncludes: {
-    '/api/webhooks/video/*': ['./node_modules/ffmpeg-static/ffmpeg'],
-  },
   webpack: (webpackConfig, context) => {
     const { dev } = context;
     if (!dev) {
