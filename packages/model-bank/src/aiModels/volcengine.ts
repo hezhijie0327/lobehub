@@ -1,4 +1,8 @@
-import { type AIChatModelCard, type AIImageModelCard } from '../types/aiModel';
+import {
+  type AIChatModelCard,
+  type AIImageModelCard,
+  type AIVideoModelCard,
+} from '../types/aiModel';
 
 // https://www.volcengine.com/docs/82379/1330310
 
@@ -1199,6 +1203,158 @@ const volcengineImageModels: AIImageModelCard[] = [
   },
 ];
 
-export const allModels = [...doubaoChatModels, ...volcengineImageModels];
+const volcengineVideoModels: AIVideoModelCard[] = [
+  {
+    description:
+      'The Doubao Large Model team has launched its new-generation professional multimodal video creation model, Seedance 2.0. It supports image, video, and audio inputs as multimodal references for video generation, and also provides capabilities such as video editing and extension. The model delivers high-precision detail reconstruction, maintains stable character consistency, and achieves highly realistic audiovisual stability. It is deeply optimized for core scenarios including commercial advertising, film and television production, and social media marketing.',
+    displayName: 'Seedance 2.0',
+    enabled: true,
+    id: 'doubao-seedance-2-0-260128',
+    parameters: {
+      aspectRatio: {
+        default: 'adaptive',
+        enum: ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+      },
+      cameraFixed: { default: false },
+      duration: { default: 5, max: 12, min: 4 },
+      endImageUrl: { default: null, maxFileSize: 30 * 1024 * 1024, requiresImageUrl: true },
+      generateAudio: { default: true },
+      imageUrl: { default: null, maxFileSize: 30 * 1024 * 1024 },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['480p', '720p'],
+      },
+      seed: { default: null },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+  {
+    description:
+      'Doubao’s video generation model, Seedance 1.5 Pro, is a globally leading video generation model capable of producing videos with highly synchronized audio and visuals. It supports multi-speaker, multilingual dialogue and comprehensively covers environmental sounds, action sounds, synthetic audio, instrumental sounds, background audio, and vocals. It also supports start and end frame control, enabling cinematic-level storytelling and meeting advanced creative demands in film, animation series, e-commerce, and advertising.',
+    displayName: 'Seedance 1.5 Pro',
+    enabled: true,
+    id: 'doubao-seedance-1-5-pro-251215',
+    parameters: {
+      aspectRatio: {
+        default: 'adaptive',
+        enum: ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+      },
+      cameraFixed: { default: false },
+      duration: { default: 5, max: 12, min: 4 },
+      endImageUrl: { default: null, maxFileSize: 30 * 1024 * 1024, requiresImageUrl: true },
+      generateAudio: { default: true },
+      imageUrl: { default: null, maxFileSize: 30 * 1024 * 1024 },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['480p', '720p', '1080p'],
+      },
+      seed: { default: null },
+    },
+    releasedAt: '2025-12-15',
+    type: 'video',
+  },
+  {
+    description:
+      'Seedance 1.0 Pro is a foundational video generation model that supports multi-shot storytelling and delivers outstanding performance across multiple dimensions. It achieves breakthroughs in semantic understanding and instruction following, enabling the generation of 1080P high-definition videos with smooth motion, rich details, diverse visual styles, and cinematic-level aesthetics.',
+    displayName: 'Seedance 1.0 Pro',
+    enabled: true,
+    id: 'doubao-seedance-1-0-pro-250528',
+    parameters: {
+      aspectRatio: {
+        default: 'adaptive',
+        enum: ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+      },
+      cameraFixed: { default: false },
+      duration: { default: 5, max: 12, min: 2 },
+      endImageUrl: { default: null, maxFileSize: 30 * 1024 * 1024, requiresImageUrl: true },
+      imageUrl: { default: null, maxFileSize: 30 * 1024 * 1024 },
+      prompt: { default: '' },
+      resolution: {
+        default: '1080p',
+        enum: ['480p', '720p', '1080p'],
+      },
+      seed: { default: null },
+    },
+    releasedAt: '2025-05-28',
+    type: 'video',
+  },
+  {
+    description:
+      'Seedance 1.0 Pro Fast is a comprehensive model that delivers bottom-tier pricing with top-tier performance, achieving an exceptional balance among video generation quality, speed, and cost. It inherits the core strengths of Seedance 1.0 Pro, while offering faster generation speeds and more competitive pricing, providing creators with a dual optimization of efficiency and cost.',
+    displayName: 'Seedance 1.0 Pro Fast',
+    enabled: true,
+    id: 'doubao-seedance-1-0-pro-fast-251015',
+    parameters: {
+      aspectRatio: {
+        default: 'adaptive',
+        enum: ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+      },
+      cameraFixed: { default: false },
+      duration: { default: 5, max: 12, min: 2 },
+      imageUrl: { default: null, maxFileSize: 30 * 1024 * 1024 },
+      prompt: { default: '' },
+      resolution: {
+        default: '1080p',
+        enum: ['480p', '720p', '1080p'],
+      },
+      seed: { default: null },
+    },
+    releasedAt: '2025-10-15',
+    type: 'video',
+  },
+  {
+    description:
+      'Delivers stable generation quality and strong cost-effectiveness, generating videos based on a start frame, start-and-end frames, or reference images.',
+    displayName: 'Seedance 1.0 Lite I2V',
+    enabled: true,
+    id: 'doubao-seedance-1-0-lite-i2v-250428',
+    parameters: {
+      aspectRatio: {
+        default: 'adaptive',
+        enum: ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+      },
+      cameraFixed: { default: false },
+      duration: { default: 5, max: 12, min: 2 },
+      endImageUrl: { default: null, maxFileSize: 30 * 1024 * 1024, requiresImageUrl: true },
+      imageUrl: { default: null, maxFileSize: 30 * 1024 * 1024 },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['480p', '720p', '1080p'],
+      },
+      seed: { default: null },
+    },
+    releasedAt: '2025-04-28',
+    type: 'video',
+  },
+  {
+    description:
+      'Delivers stable generation quality and high cost-effectiveness, generating videos based on text instructions.',
+    displayName: 'Seedance 1.0 Lite T2V',
+    enabled: true,
+    id: 'doubao-seedance-1-0-lite-t2v-250428',
+    parameters: {
+      aspectRatio: {
+        default: 'adaptive',
+        enum: ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+      },
+      cameraFixed: { default: false },
+      duration: { default: 5, max: 12, min: 2 },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['480p', '720p', '1080p'],
+      },
+      seed: { default: null },
+    },
+    releasedAt: '2025-04-28',
+    type: 'video',
+  },
+];
+
+export const allModels = [...doubaoChatModels, ...volcengineImageModels, ...volcengineVideoModels];
 
 export default allModels;
