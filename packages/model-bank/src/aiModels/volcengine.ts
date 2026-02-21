@@ -1313,8 +1313,8 @@ const volcengineVideoModels: AIVideoModelCard[] = [
     id: 'doubao-seedance-1-0-lite-i2v-250428',
     parameters: {
       aspectRatio: {
-        default: 'adaptive',
-        enum: ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+        default: '16:9',
+        enum: ['16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
       },
       cameraFixed: { default: false },
       duration: { default: 5, max: 12, min: 2 },
@@ -1338,8 +1338,8 @@ const volcengineVideoModels: AIVideoModelCard[] = [
     id: 'doubao-seedance-1-0-lite-t2v-250428',
     parameters: {
       aspectRatio: {
-        default: 'adaptive',
-        enum: ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+        default: '16:9',
+        enum: ['16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
       },
       cameraFixed: { default: false },
       duration: { default: 5, max: 12, min: 2 },

@@ -52,7 +52,30 @@ export const POST = async (req: Request, { params }: { params: Promise<{ provide
   try {
     // Parse webhook body using provider-specific handler
     const runtime = ModelRuntime.initializeWithProvider(provider, {});
-    const result = await runtime.handleCreateVideoWebhook({ body });
+    let result;
+    try {
+      result = await runtime.handleCreateVideoWebhook({ body });
+    } catch (error) {
+      const errorMessage = (error as Error).message;
+
+      // Handle MiniMax webhook challenge
+      if (errorMessage.startsWith('CHALLENGE:')) {
+        const challenge = errorMessage.slice('CHALLENGE:'.length);
+        log('Returning challenge response: %s', challenge);
+        return NextResponse.json({ challenge });
+      }
+
+      // Handle MiniMax need to retrieve video via file_id
+      if (errorMessage.startsWith('NEED_FILE_ID:')) {
+        const fileId = errorMessage.slice('NEED_FILE_ID:'.length);
+        log('Video succeeded but need to retrieve via file_id: %s', fileId);
+        // For now, we'll need to implement file retrieval
+        // This is a placeholder - the actual implementation would call the file retrieve API
+        throw new Error(`File retrieval not implemented for file_id: ${fileId}`);
+      }
+
+      throw error;
+    }
 
     if (!result) {
       return NextResponse.json(

@@ -1,4 +1,8 @@
-import { type AIChatModelCard, type AIImageModelCard } from '../types/aiModel';
+import {
+  type AIChatModelCard,
+  type AIImageModelCard,
+  type AIVideoModelCard,
+} from '../types/aiModel';
 
 const minimaxChatModels: AIChatModelCard[] = [
   {
@@ -223,6 +227,144 @@ const minimaxImageModels: AIImageModelCard[] = [
   },
 ];
 
-export const allModels = [...minimaxChatModels, ...minimaxImageModels];
+const minimaxVideoModels: AIVideoModelCard[] = [
+  {
+    description: '',
+    displayName: 'MiniMax Hailuo 2.3 Fast',
+    enabled: true,
+    id: 'MiniMax-Hailuo-2.3-Fast',
+    parameters: {
+      duration: { default: 6, max: 10, min: 6 },
+      imageUrl: { default: null },
+      prompt: { default: '' },
+      resolution: {
+        default: '768p',
+        enum: ['768p', '1080p'],
+      },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+  {
+    description: '',
+    displayName: 'MiniMax Hailuo 2.3',
+    enabled: true,
+    id: 'MiniMax-Hailuo-2.3',
+    parameters: {
+      duration: { default: 6, max: 10, min: 6 },
+      imageUrl: { default: null },
+      prompt: { default: '' },
+      resolution: {
+        default: '768p',
+        enum: ['768p', '1080p'],
+      },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+  {
+    description: '',
+    displayName: 'MiniMax Hailuo 02',
+    enabled: true,
+    id: 'MiniMax-Hailuo-02',
+    parameters: {
+      duration: { default: 6, max: 10, min: 6 },
+      endImageUrl: { default: null, requiresImageUrl: true },
+      imageUrl: { default: null },
+      prompt: { default: '' },
+      resolution: {
+        default: '768p',
+        enum: ['512P', '768p', '1080p'],
+      },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+  {
+    description: '',
+    displayName: 'T2V-01-Director',
+    enabled: true,
+    id: 'T2V-01-Director',
+    parameters: {
+      duration: { default: 6, max: 6, min: 6 },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['720p'],
+      },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+  {
+    description: '',
+    displayName: 'I2V-01-Director',
+    enabled: true,
+    id: 'I2V-01-Director',
+    parameters: {
+      duration: { default: 6, max: 6, min: 6 },
+      imageUrl: { default: null },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['720p'],
+      },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+  {
+    description: '',
+    displayName: 'I2V-01-live',
+    enabled: true,
+    id: 'I2V-01-live',
+    parameters: {
+      duration: { default: 6, max: 6, min: 6 },
+      imageUrl: { default: null },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['720p'],
+      },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+  {
+    description: '',
+    displayName: 'I2V-01',
+    enabled: true,
+    id: 'I2V-01',
+    parameters: {
+      duration: { default: 6, max: 6, min: 6 },
+      imageUrl: { default: null },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['720p'],
+      },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+  {
+    description: '',
+    displayName: 'T2V-01',
+    enabled: true,
+    id: 'T2V-01',
+    parameters: {
+      duration: { default: 6, max: 6, min: 6 },
+      prompt: { default: '' },
+      resolution: {
+        default: '720p',
+        enum: ['720p'],
+      },
+    },
+    releasedAt: '2026-01-28',
+    type: 'video',
+  },
+];
+
+export const allModels = [...minimaxChatModels, ...minimaxImageModels, ...minimaxVideoModels];
 
 export default allModels;

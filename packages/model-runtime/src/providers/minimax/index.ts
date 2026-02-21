@@ -3,6 +3,8 @@ import { minimax as minimaxChatModels, ModelProvider } from 'model-bank';
 import { createOpenAICompatibleRuntime } from '../../core/openaiCompatibleFactory';
 import { resolveParameters } from '../../core/parameterResolver';
 import { createMiniMaxImage } from './createImage';
+import { createMiniMaxVideo } from './video/createVideo';
+import { handleMiniMaxVideoWebhook } from './video/handleCreateVideoWebhook';
 
 export const getMinimaxMaxOutputs = (modelId: string): number | undefined => {
   const model = minimaxChatModels.find((model) => model.id === modelId);
@@ -73,8 +75,10 @@ export const LobeMinimaxAI = createOpenAICompatibleRuntime({
     },
   },
   createImage: createMiniMaxImage,
+  createVideo: createMiniMaxVideo,
   debug: {
     chatCompletion: () => process.env.DEBUG_MINIMAX_CHAT_COMPLETION === '1',
   },
+  handleCreateVideoWebhook: handleMiniMaxVideoWebhook,
   provider: ModelProvider.Minimax,
 });
