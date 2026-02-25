@@ -10,11 +10,7 @@ import { getRouteById } from '@/config/routes';
 import { useActiveTabKey } from '@/hooks/useActiveTabKey';
 import { useGlobalStore } from '@/store/global';
 import { SidebarTabKey } from '@/store/global/initialState';
-import {
-  featureFlagsSelectors,
-  serverConfigSelectors,
-  useServerConfigStore,
-} from '@/store/serverConfig';
+import { featureFlagsSelectors, useServerConfigStore } from '@/store/serverConfig';
 
 import { type NavItemProps } from '../../../../../../../features/NavPanel/components/NavItem';
 import NavItem from '../../../../../../../features/NavPanel/components/NavItem';
@@ -35,7 +31,6 @@ const Nav = memo(() => {
   const { t } = useTranslation('common');
   const toggleCommandMenu = useGlobalStore((s) => s.toggleCommandMenu);
   const { showMarket, showAiImage } = useServerConfigStore(featureFlagsSelectors);
-  const enableBusinessFeatures = useServerConfigStore(serverConfigSelectors.enableBusinessFeatures);
 
   const items: Item[] = useMemo(
     () => [
@@ -60,7 +55,6 @@ const Nav = memo(() => {
         url: '/page',
       },
       {
-        hidden: !enableBusinessFeatures,
         icon: getRouteById('video')!.icon,
         isNew: true,
         key: SidebarTabKey.Video,
