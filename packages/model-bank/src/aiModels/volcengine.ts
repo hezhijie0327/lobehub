@@ -2,7 +2,7 @@ import {
   PRESET_VIDEO_ASPECT_RATIOS,
   PRESET_VIDEO_RESOLUTIONS,
   type VideoModelParamsSchema,
-} from '../../standard-parameters/video';
+} from '../standard-parameters/video';
 import {
   type AIChatModelCard,
   type AIImageModelCard,
