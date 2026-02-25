@@ -1,12 +1,24 @@
 import createDebug from 'debug';
 
 import type { CreateVideoOptions } from '../../../core/openaiCompatibleFactory';
-import type { CreateVideoPayload, CreateVideoResponse } from '../../../types/video';
+import type { CreateVideoPayload } from '../../../types/video';
+import { asyncifyPolling } from '../../../utils/asyncifyPolling';
 
 const log = createDebug('lobe-video:xai');
 
 interface XAIVideoGenerationResponse {
   request_id: string;
+}
+
+interface XAIVideoStatusResponse {
+  code?: string;
+  error?: string;
+  model?: string;
+  video?: {
+    url?: string;
+    duration?: number;
+    respect_moderation?: boolean;
+  };
 }
 
 interface XAIVideoRequestBody {
@@ -18,18 +30,49 @@ interface XAIVideoRequestBody {
   model: string;
   prompt: string;
   resolution?: '720p' | '480p';
-  video_url?: string;
+}
+
+interface PollingResult {
+  error?: string;
+  status: 'pending' | 'done' | 'failed';
+  videoUrl?: string;
 }
 
 /**
- * XAI video generation implementation
+ * Query XAI video generation status by request_id
+ */
+async function queryVideoStatus(
+  requestId: string,
+  apiKey: string,
+  baseURL: string,
+): Promise<XAIVideoStatusResponse> {
+  const response = await fetch(`${baseURL}/videos/${requestId}`, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    log('XAI video status query error: %s %s', response.status, errorText);
+    throw new Error(`XAI video status query error: ${response.status} ${errorText}`);
+  }
+
+  return (await response.json()) as XAIVideoStatusResponse;
+}
+
+/**
+ * XAI video generation implementation with polling
  * API docs: https://docs.x.ai/docs/video-generation
+ * Returns both inferenceId and videoUrl (for async processing)
  */
 export async function createXAIVideo(
   payload: CreateVideoPayload,
   options: CreateVideoOptions,
-): Promise<CreateVideoResponse> {
+): Promise<{ inferenceId: string; videoUrl: string }> {
   const { model, params } = payload;
+  const { apiKey, provider } = options;
   const { prompt, imageUrl, aspectRatio, duration, resolution } = params;
 
   log('Creating video with XAI API - model: %s, params: %O', model, params);
@@ -62,10 +105,11 @@ export async function createXAIVideo(
 
   log('XAI video API request body: %s', JSON.stringify(body, null, 2));
 
+  // Step 1: Submit video generation request
   const response = await fetch(`${baseURL}/videos/generations`, {
     body: JSON.stringify(body),
     headers: {
-      'Authorization': `Bearer ${options.apiKey}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     method: 'POST',
@@ -85,5 +129,44 @@ export async function createXAIVideo(
     throw new Error('Invalid response: missing request_id');
   }
 
-  return { inferenceId: data.request_id };
+  const requestId = data.request_id;
+
+  // Step 2: Poll for video generation status
+  const videoData = await asyncifyPolling<PollingResult, { inferenceId: string; videoUrl: string }>(
+    {
+      checkStatus: (pollingResult: PollingResult) => {
+        if (pollingResult.status === 'done' && pollingResult.videoUrl) {
+          log('Video generation succeeded: %s', requestId);
+          return {
+            data: { inferenceId: requestId, videoUrl: pollingResult.videoUrl },
+            status: 'success',
+          };
+        }
+
+        if (pollingResult.error) {
+          log('Video generation failed: %s, error: %s', requestId, pollingResult.error);
+          return {
+            error: new Error(pollingResult.error),
+            status: 'failed',
+          };
+        }
+
+        return { status: 'pending' };
+      },
+      logger: {
+        debug: (message: any, ...args: any[]) => log(message, ...args),
+        error: (message: any, ...args: any[]) => log(message, ...args),
+      },
+      maxConsecutiveFailures: 10,
+      maxRetries: 60, // 60 retries = up to 5 minutes
+      pollingQuery: () =>
+        queryVideoStatus(requestId, apiKey, baseURL).then((response) => ({
+          error: response.error,
+          status: response.video?.url ? 'done' : 'pending',
+          videoUrl: response.video?.url,
+        })),
+    },
+  );
+
+  return videoData;
 }

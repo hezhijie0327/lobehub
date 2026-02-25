@@ -4,7 +4,6 @@ import { createOpenAICompatibleRuntime } from '../../core/openaiCompatibleFactor
 import { MODEL_LIST_CONFIGS, processModelList } from '../../utils/modelParse';
 import { createXAIImage } from './createImage';
 import { createXAIVideo } from './video/createVideo';
-import { handleXAIVideoWebhook } from './video/handleCreateVideoWebhook';
 
 export interface XAIModelCard {
   id: string;
@@ -59,7 +58,6 @@ export const LobeXAI = createOpenAICompatibleRuntime({
   debug: {
     chatCompletion: () => process.env.DEBUG_XAI_CHAT_COMPLETION === '1',
   },
-  handleCreateVideoWebhook: handleXAIVideoWebhook,
   models: async ({ client }) => {
     const modelsPage = (await client.models.list()) as any;
     const modelList: XAIModelCard[] = modelsPage.data;

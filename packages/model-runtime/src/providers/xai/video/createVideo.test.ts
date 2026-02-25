@@ -32,22 +32,51 @@ describe('createXAIVideo', () => {
   });
 
   describe('successful creation', () => {
-    it('should return inferenceId on success', async () => {
-      mockFetch.mockResolvedValue({
-        json: () => Promise.resolve({ request_id: 'req-abc-123' }),
-        ok: true,
-      });
+    it('should return inferenceId and videoUrl on success', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          json: () => Promise.resolve({ request_id: 'req-abc-123' }),
+          ok: true,
+        })
+        .mockResolvedValue({
+          json: () =>
+            Promise.resolve({
+              model: 'grok-imagine-video',
+              video: {
+                url: 'https://example.com/video.mp4',
+                duration: 5,
+                respect_moderation: true,
+              },
+            }),
+          ok: true,
+        });
 
       const result = await createXAIVideo(payload, options);
 
-      expect(result).toEqual({ inferenceId: 'req-abc-123' });
+      expect(result).toEqual({
+        inferenceId: 'req-abc-123',
+        videoUrl: 'https://example.com/video.mp4',
+      });
     });
 
     it('should send minimal body with only prompt', async () => {
-      mockFetch.mockResolvedValue({
-        json: () => Promise.resolve({ request_id: 'req-1' }),
-        ok: true,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          json: () => Promise.resolve({ request_id: 'req-1' }),
+          ok: true,
+        })
+        .mockResolvedValue({
+          json: () =>
+            Promise.resolve({
+              model: 'grok-imagine-video',
+              video: {
+                url: 'https://example.com/video.mp4',
+                duration: 5,
+                respect_moderation: true,
+              },
+            }),
+          ok: true,
+        });
 
       await createXAIVideo(payload, options);
 
@@ -65,10 +94,23 @@ describe('createXAIVideo', () => {
 
   describe('image support', () => {
     it('should add image when imageUrl is provided', async () => {
-      mockFetch.mockResolvedValue({
-        json: () => Promise.resolve({ request_id: 'req-1' }),
-        ok: true,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          json: () => Promise.resolve({ request_id: 'req-1' }),
+          ok: true,
+        })
+        .mockResolvedValue({
+          json: () =>
+            Promise.resolve({
+              model: 'grok-imagine-video',
+              video: {
+                url: 'https://example.com/video.mp4',
+                duration: 5,
+                respect_moderation: true,
+              },
+            }),
+          ok: true,
+        });
 
       payload.params.imageUrl = 'https://example.com/start.jpg';
 
@@ -83,10 +125,23 @@ describe('createXAIVideo', () => {
 
   describe('optional params', () => {
     beforeEach(() => {
-      mockFetch.mockResolvedValue({
-        json: () => Promise.resolve({ request_id: 'req-1' }),
-        ok: true,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          json: () => Promise.resolve({ request_id: 'req-1' }),
+          ok: true,
+        })
+        .mockResolvedValue({
+          json: () =>
+            Promise.resolve({
+              model: 'grok-imagine-video',
+              video: {
+                url: 'https://example.com/video.mp4',
+                duration: 5,
+                respect_moderation: true,
+              },
+            }),
+          ok: true,
+        });
     });
 
     it('should map aspectRatio to body.aspect_ratio', async () => {
@@ -113,10 +168,23 @@ describe('createXAIVideo', () => {
 
   describe('client config', () => {
     beforeEach(() => {
-      mockFetch.mockResolvedValue({
-        json: () => Promise.resolve({ request_id: 'req-1' }),
-        ok: true,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          json: () => Promise.resolve({ request_id: 'req-1' }),
+          ok: true,
+        })
+        .mockResolvedValue({
+          json: () =>
+            Promise.resolve({
+              model: 'grok-imagine-video',
+              video: {
+                url: 'https://example.com/video.mp4',
+                duration: 5,
+                respect_moderation: true,
+              },
+            }),
+          ok: true,
+        });
     });
 
     it('should use default baseURL', async () => {
@@ -164,6 +232,26 @@ describe('createXAIVideo', () => {
 
       await expect(createXAIVideo(payload, options)).rejects.toThrow(
         'Invalid response: missing request_id',
+      );
+    });
+
+    it('should throw when video generation fails with error response', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          json: () => Promise.resolve({ request_id: 'req-1' }),
+          ok: true,
+        })
+        .mockResolvedValue({
+          json: () =>
+            Promise.resolve({
+              code: 'Unrecoverable data loss or corruption',
+              error: 'Fetching image failed with HTTP status 403 Forbidden.',
+            }),
+          ok: true,
+        });
+
+      await expect(createXAIVideo(payload, options)).rejects.toThrow(
+        'Fetching image failed with HTTP status 403 Forbidden.',
       );
     });
   });
