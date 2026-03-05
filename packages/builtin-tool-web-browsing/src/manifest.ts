@@ -1,6 +1,7 @@
 import type { BuiltinToolManifest } from '@lobechat/types';
 import dayjs from 'dayjs';
 
+import { getAvailableCrawlProviders, getAvailableSearchProviders } from './helper';
 import { systemPrompt } from './systemRole';
 import { WebBrowsingApiName } from './types';
 
@@ -131,6 +132,10 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
       'Search the web for current information and crawl web pages to extract content. Supports multiple search engines, categories, and time ranges for comprehensive research.',
     title: 'Web Browsing',
   },
-  systemRole: systemPrompt(dayjs(new Date()).format('YYYY-MM-DD')),
+  systemRole: systemPrompt(
+    dayjs(new Date()).format('YYYY-MM-DD'),
+    getAvailableSearchProviders,
+    getAvailableCrawlProviders,
+  ),
   type: 'builtin',
 };
