@@ -8,7 +8,6 @@ import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FORM_STYLE } from '@/const/layoutTokens';
-import { useEnabledChatModels } from '@/hooks/useEnabledChatModels';
 import { useEnabledEmbeddingModels } from '@/hooks/useEnabledEmbeddingModels';
 import { useUserStore } from '@/store/user';
 import { settingsSelectors } from '@/store/user/selectors';
@@ -21,18 +20,10 @@ const FilesConfigSetting = memo(() => {
   const [loading, setLoading] = useState(false);
 
   const embeddingModels = useEnabledEmbeddingModels();
-  const chatModels = useEnabledChatModels();
 
   if (!isUserStateInit) return <Skeleton active paragraph={{ rows: 3 }} title={false} />;
 
   const embeddingModelOptions = embeddingModels.flatMap((provider) =>
-    provider.children.map((model) => ({
-      label: `${provider.name} / ${model.displayName || model.id}`,
-      value: `${provider.id}/${model.id}`,
-    })),
-  );
-
-  const rerankModelOptions = chatModels.flatMap((provider) =>
     provider.children.map((model) => ({
       label: `${provider.name} / ${model.displayName || model.id}`,
       value: `${provider.id}/${model.id}`,
@@ -108,46 +99,12 @@ const FilesConfigSetting = memo(() => {
     title: t('filesConfig.queryGroup.title'),
   };
 
-  const rerankConfig: FormGroupItemType = {
-    children: [
-      {
-        children: (
-          <Select
-            options={rerankModelOptions}
-            placeholder={t('filesConfig.rerankModel.placeholder')}
-            value={
-              filesConfig?.rerankerModel
-                ? `${filesConfig.rerankerModel.provider}/${filesConfig.rerankerModel.model}`
-                : undefined
-            }
-            onChange={async (value: string) => {
-              setLoading(true);
-              const [provider, model] = value.split('/');
-              await setSettings({
-                filesConfig: {
-                  ...filesConfig,
-                  rerankerModel: { model, provider },
-                },
-              });
-              setLoading(false);
-            }}
-          />
-        ),
-        desc: t('filesConfig.rerankModel.desc'),
-        label: t('filesConfig.rerankModel.title'),
-        layout: 'horizontal',
-        minWidth: undefined,
-      },
-    ],
-    title: t('filesConfig.rerankGroup.title'),
-  };
-
   return (
     <Form
       collapsible={false}
       form={form}
       initialValues={filesConfig}
-      items={[embeddingConfig, queryConfig, rerankConfig]}
+      items={[embeddingConfig, queryConfig]}
       itemsType={'group'}
       variant={'filled'}
       {...FORM_STYLE}
