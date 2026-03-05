@@ -56,6 +56,23 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
             enum: ['anytime', 'day', 'week', 'month', 'year'],
             type: 'string',
           },
+          provider: {
+            description: 'The search provider to use.',
+            enum: [
+              'anspire',
+              'bocha',
+              'brave',
+              'exa',
+              'firecrawl',
+              'google',
+              'jina',
+              'kagi',
+              'search1api',
+              'searxng',
+              'tavily',
+            ],
+            type: 'string',
+          },
         },
         required: ['query'],
         type: 'object',
@@ -69,6 +86,11 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
         properties: {
           url: {
             description: 'The url need to be crawled',
+            type: 'string',
+          },
+          provider: {
+            description: 'The crawler provider to use.',
+            enum: ['naive', 'jina', 'browserless', 'search1api', 'exa', 'firecrawl', 'tavily'],
             type: 'string',
           },
         },
@@ -88,6 +110,11 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
               type: 'string',
             },
             type: 'array',
+          },
+          provider: {
+            description: 'The crawler provider to use.',
+            enum: ['naive', 'jina', 'browserless', 'search1api', 'exa', 'firecrawl', 'tavily'],
+            type: 'string',
           },
         },
         required: ['urls'],

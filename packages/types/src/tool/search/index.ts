@@ -9,6 +9,18 @@ export interface SearchParams {
 }
 
 export interface SearchQuery extends SearchParams {
+  provider?:
+    | 'anspire'
+    | 'bocha'
+    | 'brave'
+    | 'exa'
+    | 'firecrawl'
+    | 'google'
+    | 'jina'
+    | 'kagi'
+    | 'search1api'
+    | 'searxng'
+    | 'tavily';
   query: string;
 }
 

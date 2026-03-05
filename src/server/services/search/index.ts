@@ -4,7 +4,7 @@ import pMap from 'p-map';
 
 import { toolsEnv } from '@/envs/tools';
 
-import { type SearchImplType, type SearchServiceImpl } from './impls';
+import { SearchImplType, type SearchServiceImpl } from './impls';
 import { createSearchServiceImpl } from './impls';
 
 const DEFAULT_CRAWL_CONCURRENCY = 3;
@@ -21,7 +21,7 @@ const parseImplEnv = (envString: string = '') => {
  * Uses different implementations for different search operations
  */
 export class SearchService {
-  private searchImpList: SearchServiceImpl[];
+  private searchImpList: Array<{ type: SearchImplType; impl: SearchServiceImpl }>;
 
   private get crawlerImpls() {
     return parseImplEnv(toolsEnv.CRAWLER_IMPLS);
@@ -39,18 +39,29 @@ export class SearchService {
     const impls = this.searchImpls;
     this.searchImpList =
       impls.length > 0
-        ? impls.map((impl) => createSearchServiceImpl(impl))
-        : [createSearchServiceImpl()];
+        ? impls.map((impl) => ({ type: impl, impl: createSearchServiceImpl(impl) }))
+        : [{ type: SearchImplType.SearXNG, impl: createSearchServiceImpl() }];
   }
 
-  async crawlPages(input: { impls?: CrawlImplType[]; urls: string[] }) {
+  async crawlPages(input: { impls?: CrawlImplType[]; provider?: CrawlImplType; urls: string[] }) {
     const { Crawler } = await import('@lobechat/web-crawler');
-    const crawler = new Crawler({ impls: this.crawlerImpls });
+
+    // Determine which impl to use
+    let impl: CrawlImplType;
+    if (input.provider) {
+      impl = input.provider;
+    } else if (input.impls && input.impls.length > 0) {
+      impl = input.impls[0];
+    } else {
+      impl = (this.crawlerImpls[0] || 'naive') as CrawlImplType;
+    }
+
+    const crawler = new Crawler({ impl });
 
     const results = await pMap(
       input.urls,
       async (url) => {
-        return await this.crawlWithRetry(crawler, url, input.impls);
+        return await this.crawlWithRetry(crawler, url);
       },
       { concurrency: this.crawlConcurrency },
     );
@@ -58,18 +69,14 @@ export class SearchService {
     return { results };
   }
 
-  private async crawlWithRetry(
-    crawler: Crawler,
-    url: string,
-    impls?: CrawlImplType[],
-  ): Promise<CrawlUniformResult> {
+  private async crawlWithRetry(crawler: Crawler, url: string): Promise<CrawlUniformResult> {
     const maxAttempts = this.crawlerRetry + 1;
     let lastResult: CrawlUniformResult | undefined;
     let lastError: Error | undefined;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const result = await crawler.crawl({ impls, url });
+        const result = await crawler.crawl({ url });
         lastResult = result;
 
         if (!this.isFailedCrawlResult(result)) {
@@ -129,39 +136,46 @@ export class SearchService {
    * Query for search results (uses the first provider)
    */
   async query(query: string, params?: SearchParams) {
-    return this.queryWithImpl(this.searchImpList[0], query, params);
+    const impl = this.searchImpList[0]?.impl;
+    if (!impl) {
+      return { costTime: 0, query, resultNumbers: 0, results: [] };
+    }
+    return this.queryWithImpl(impl, query, params);
   }
 
-  async webSearch({ query, searchCategories, searchEngines, searchTimeRange }: SearchQuery) {
-    for (const impl of this.searchImpList) {
-      let data = await this.queryWithImpl(impl, query, {
-        searchCategories,
-        searchEngines,
-        searchTimeRange,
-      });
+  async webSearch({
+    query,
+    searchCategories,
+    searchEngines,
+    searchTimeRange,
+    provider,
+  }: SearchQuery) {
+    let implItem: { type: SearchImplType; impl: SearchServiceImpl } | undefined;
 
-      // First retry: remove search engine restrictions if no results found
-      if (data.results.length === 0 && searchEngines && searchEngines?.length > 0) {
-        data = await this.queryWithImpl(impl, query, {
-          searchCategories,
-          searchEngines: undefined,
-          searchTimeRange,
-        });
-      }
-
-      // Second retry: remove all restrictions if still no results found
-      if (data.results.length === 0) {
-        data = await this.queryWithImpl(impl, query);
-      }
-
-      // If this provider returned results, use them
-      if (data.results.length > 0) {
-        return data;
+    // If provider is specified, use that provider
+    if (provider) {
+      implItem = this.searchImpList.find((item) => item.type === provider);
+      if (!implItem) {
+        console.warn(
+          `[SearchService] Provider "${provider}" not found, using first available provider`,
+        );
       }
     }
 
-    // All providers exhausted, return empty result
-    return { costTime: 0, query, resultNumbers: 0, results: [] };
+    // Use the first available provider if no specific provider or not found
+    if (!implItem) {
+      implItem = this.searchImpList[0];
+    }
+
+    if (!implItem) {
+      return { costTime: 0, query, resultNumbers: 0, results: [] };
+    }
+
+    return await this.queryWithImpl(implItem.impl, query, {
+      searchCategories,
+      searchEngines,
+      searchTimeRange,
+    });
   }
 }
 

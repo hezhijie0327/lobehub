@@ -39,21 +39,21 @@ describe('Crawler', () => {
     };
 
     const { crawlImpls } = await import('../crawImpl');
-    vi.mocked(crawlImpls.naive).mockResolvedValue(mockResult);
+    vi.mocked(crawlImpls.browserless).mockResolvedValue(mockResult);
 
     const result = await crawler.crawl({
       url: 'https://example.com',
     });
 
     expect(result).toEqual({
-      crawler: 'naive',
+      crawler: 'browserless',
       data: mockResult,
       originalUrl: 'https://example.com',
       transformedUrl: undefined,
     });
   });
 
-  it('should use user provided impls', async () => {
+  it('should use configured impl', async () => {
     const mockResult = {
       content: 'test content'.padEnd(101, ' '), // Ensure content length > 100
       contentType: 'text' as const,
@@ -63,8 +63,8 @@ describe('Crawler', () => {
     const { crawlImpls } = await import('../crawImpl');
     vi.mocked(crawlImpls.jina).mockResolvedValue(mockResult);
 
-    const result = await crawler.crawl({
-      impls: ['jina'],
+    const jinaCrawler = new Crawler({ impl: 'jina' });
+    const result = await jinaCrawler.crawl({
       url: 'https://example.com',
     });
 
@@ -81,8 +81,6 @@ describe('Crawler', () => {
     mockError.name = 'CrawlError';
 
     const { crawlImpls } = await import('../crawImpl');
-    vi.mocked(crawlImpls.naive).mockRejectedValue(mockError);
-    vi.mocked(crawlImpls.jina).mockRejectedValue(mockError);
     vi.mocked(crawlImpls.browserless).mockRejectedValue(mockError);
 
     const result = await crawler.crawl({
@@ -92,7 +90,7 @@ describe('Crawler', () => {
     expect(result).toEqual({
       crawler: 'browserless',
       data: {
-        content: 'Fail to crawl the page. Error type: CrawlError, error message: Crawl failed',
+        content: 'Fail to crawl page. Error type: CrawlError, error message: Crawl failed',
         errorMessage: 'Crawl failed',
         errorType: 'CrawlError',
       },
@@ -109,7 +107,7 @@ describe('Crawler', () => {
     };
 
     const { crawlImpls } = await import('../crawImpl');
-    vi.mocked(crawlImpls.naive).mockResolvedValue(mockResult);
+    vi.mocked(crawlImpls.browserless).mockResolvedValue(mockResult);
 
     const { applyUrlRules } = await import('../utils/appUrlRules');
     vi.mocked(applyUrlRules).mockReturnValue({
@@ -122,7 +120,7 @@ describe('Crawler', () => {
     });
 
     expect(result).toEqual({
-      crawler: 'naive',
+      crawler: 'browserless',
       data: mockResult,
       originalUrl: 'https://example.com',
       transformedUrl: 'https://transformed.example.com',
@@ -137,7 +135,7 @@ describe('Crawler', () => {
     };
 
     const { crawlImpls } = await import('../crawImpl');
-    const mockCrawlImpl = vi.mocked(crawlImpls.naive).mockResolvedValue(mockResult);
+    const mockCrawlImpl = vi.mocked(crawlImpls.browserless).mockResolvedValue(mockResult);
 
     const { applyUrlRules } = await import('../utils/appUrlRules');
     vi.mocked(applyUrlRules).mockReturnValue({
@@ -195,8 +193,6 @@ describe('Crawler', () => {
     };
 
     const { crawlImpls } = await import('../crawImpl');
-    vi.mocked(crawlImpls.naive).mockResolvedValue(mockResult);
-    vi.mocked(crawlImpls.jina).mockResolvedValue(mockResult);
     vi.mocked(crawlImpls.browserless).mockResolvedValue(mockResult);
 
     const result = await crawler.crawl({
@@ -207,7 +203,7 @@ describe('Crawler', () => {
       crawler: 'browserless',
       data: {
         content:
-          'Fail to crawl the page. Error type: EmptyCrawlResultError, error message: browserless returned empty or short content',
+          'Fail to crawl page. Error type: EmptyCrawlResultError, error message: browserless returned empty or short content',
         errorMessage: 'browserless returned empty or short content',
         errorType: 'EmptyCrawlResultError',
       },
