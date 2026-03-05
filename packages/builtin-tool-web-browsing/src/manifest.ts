@@ -59,19 +59,7 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
           },
           provider: {
             description: 'The search provider to use.',
-            enum: [
-              'anspire',
-              'bocha',
-              'brave',
-              'exa',
-              'firecrawl',
-              'google',
-              'jina',
-              'kagi',
-              'search1api',
-              'searxng',
-              'tavily',
-            ],
+            enum: getAvailableSearchProviders,
             type: 'string',
           },
         },
@@ -91,7 +79,7 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
           },
           provider: {
             description: 'The crawler provider to use.',
-            enum: ['naive', 'jina', 'browserless', 'search1api', 'exa', 'firecrawl', 'tavily'],
+            enum: getAvailableCrawlProviders,
             type: 'string',
           },
         },
@@ -114,7 +102,7 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
           },
           provider: {
             description: 'The crawler provider to use.',
-            enum: ['naive', 'jina', 'browserless', 'search1api', 'exa', 'firecrawl', 'tavily'],
+            enum: getAvailableCrawlProviders,
             type: 'string',
           },
         },
