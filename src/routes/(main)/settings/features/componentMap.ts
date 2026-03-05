@@ -19,6 +19,9 @@ export const componentMap = {
   [SettingsTabs.Image]: dynamic(() => import('../image'), {
     loading: loading('Settings > Image'),
   }),
+  [SettingsTabs.Files]: dynamic(() => import('../files'), {
+    loading: loading('Settings > Files'),
+  }),
   [SettingsTabs.Memory]: dynamic(() => import('../memory'), {
     loading: loading('Settings > Memory'),
   }),

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { LobeAgentSettings } from '../../session';
+import type { FilesConfig } from './filesConfig';
 import type { UserGeneralConfig } from './general';
 import type { UserHotkeyConfig } from './hotkey';
 import type { UserImageConfig } from './image';
@@ -32,6 +33,7 @@ export * from './tts';
  */
 export interface UserSettings {
   defaultAgent: UserDefaultAgent;
+  filesConfig?: FilesConfig;
   general: UserGeneralConfig;
   hotkey: UserHotkeyConfig;
   image: UserImageConfig;
@@ -51,6 +53,7 @@ export interface UserSettings {
 export const UserSettingsSchema = z
   .object({
     defaultAgent: z.any().optional(),
+    filesConfig: z.any().optional(),
     general: z.any().optional(),
     hotkey: z.any().optional(),
     image: z.any().optional(),

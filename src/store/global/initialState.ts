@@ -43,6 +43,7 @@ export enum SettingsTabs {
   Billing = 'billing',
   ChatAppearance = 'chat-appearance',
   Common = 'common',
+  Files = 'files',
   Funds = 'funds',
   Hotkey = 'hotkey',
   Image = 'image',

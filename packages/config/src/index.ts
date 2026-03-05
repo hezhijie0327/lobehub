@@ -2,6 +2,7 @@ import { DEFAULT_LLM_CONFIG } from '@lobechat/business-config';
 import {
   DEFAULT_AGENT,
   DEFAULT_COMMON_SETTINGS,
+  DEFAULT_FILES_CONFIG,
   DEFAULT_HOTKEY_CONFIG,
   DEFAULT_IMAGE_CONFIG,
   DEFAULT_MEMORY_SETTINGS,
@@ -13,6 +14,7 @@ import type { UserSettings } from '@lobechat/types';
 
 export const DEFAULT_SETTINGS: UserSettings = {
   defaultAgent: DEFAULT_AGENT,
+  filesConfig: DEFAULT_FILES_CONFIG,
   general: DEFAULT_COMMON_SETTINGS,
   hotkey: DEFAULT_HOTKEY_CONFIG,
   image: DEFAULT_IMAGE_CONFIG,
