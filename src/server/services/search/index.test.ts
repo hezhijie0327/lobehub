@@ -485,7 +485,7 @@ describe('SearchService', () => {
       searchService = new SearchService();
 
       await searchService.crawlPages({
-        impls: ['jina'],
+        provider: 'jina',
         urls: ['https://example.com'],
       });
 

@@ -9,6 +9,7 @@ export interface SearchParams {
 }
 
 export interface SearchQuery extends SearchParams {
+  provider?: string;
   query: string;
 }
 

@@ -23,6 +23,8 @@ const parseImplEnv = (envString: string = '') => {
 export class SearchService {
   private searchImpList: SearchServiceImpl[];
 
+  private searchImpMap: Map<string, SearchServiceImpl>;
+
   private get crawlerImpls() {
     return parseImplEnv(toolsEnv.CRAWLER_IMPLS);
   }
@@ -35,22 +37,35 @@ export class SearchService {
     return toolsEnv.CRAWLER_RETRY ?? DEFAULT_CRAWLER_RETRY;
   }
 
+  private get searchImpls() {
+    return parseImplEnv(toolsEnv.SEARCH_PROVIDERS) as SearchImplType[];
+  }
+
   constructor() {
     const impls = this.searchImpls;
     this.searchImpList =
       impls.length > 0
         ? impls.map((impl) => createSearchServiceImpl(impl))
         : [createSearchServiceImpl()];
+
+    this.searchImpMap = new Map();
+    impls.forEach((impl, index) => {
+      if (index < this.searchImpList.length) {
+        this.searchImpMap.set(impl.toLowerCase(), this.searchImpList[index]);
+      }
+    });
   }
 
-  async crawlPages(input: { impls?: CrawlImplType[]; urls: string[] }) {
+  async crawlPages(input: { provider?: string; urls: string[] }) {
     const { Crawler } = await import('@lobechat/web-crawler');
     const crawler = new Crawler({ impls: this.crawlerImpls });
+
+    const implsToUse = input.provider ? ([input.provider] as CrawlImplType[]) : undefined;
 
     const results = await pMap(
       input.urls,
       async (url) => {
-        return await this.crawlWithRetry(crawler, url, input.impls);
+        return await this.crawlWithRetry(crawler, url, implsToUse);
       },
       { concurrency: this.crawlConcurrency },
     );
@@ -103,10 +118,6 @@ export class SearchService {
     return !('contentType' in result.data);
   }
 
-  private get searchImpls() {
-    return parseImplEnv(toolsEnv.SEARCH_PROVIDERS) as SearchImplType[];
-  }
-
   /**
    * Query for search results using the specified impl
    */
@@ -132,8 +143,25 @@ export class SearchService {
     return this.queryWithImpl(this.searchImpList[0], query, params);
   }
 
-  async webSearch({ query, searchCategories, searchEngines, searchTimeRange }: SearchQuery) {
-    for (const impl of this.searchImpList) {
+  async webSearch({
+    query,
+    searchCategories,
+    searchEngines,
+    searchTimeRange,
+    provider,
+  }: SearchQuery) {
+    let implsToTry = this.searchImpList;
+
+    if (provider) {
+      const providerImpl = this.searchImpMap.get(provider.toLowerCase());
+      if (!providerImpl) {
+        console.warn(`[SearchService] Provider "${provider}" not found, using default providers`);
+      } else {
+        implsToTry = [providerImpl];
+      }
+    }
+
+    for (const impl of implsToTry) {
       let data = await this.queryWithImpl(impl, query, {
         searchCategories,
         searchEngines,

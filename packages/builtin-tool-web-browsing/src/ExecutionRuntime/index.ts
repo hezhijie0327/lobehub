@@ -56,11 +56,15 @@ export class WebBrowsingExecutionRuntime {
   }
 
   async crawlSinglePage(args: CrawlSinglePageQuery): Promise<BuiltinServerRuntimeOutput> {
-    return this.crawlMultiPages({ urls: [args.url] });
+    return this.crawlMultiPages({
+      provider: args.provider,
+      urls: [args.url],
+    });
   }
 
   async crawlMultiPages(args: CrawlMultiPagesQuery): Promise<BuiltinServerRuntimeOutput> {
     const response = await this.searchService.crawlPages({
+      provider: args.provider,
       urls: args.urls,
     });
 

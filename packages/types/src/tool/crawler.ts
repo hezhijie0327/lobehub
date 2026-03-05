@@ -1,10 +1,12 @@
 import type { CrawlErrorResult, CrawlSuccessResult } from '@lobechat/web-crawler';
 
 export interface CrawlSinglePageQuery {
+  provider?: string;
   url: string;
 }
 
 export interface CrawlMultiPagesQuery {
+  provider?: string;
   urls: string[];
 }
 

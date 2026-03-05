@@ -1,8 +1,12 @@
 import type { BuiltinToolManifest } from '@lobechat/types';
 import dayjs from 'dayjs';
 
+import { getCrawlerImpls, getSearchProviders } from './envHelper';
 import { systemPrompt } from './systemRole';
 import { WebBrowsingApiName } from './types';
+
+const searchProviders = getSearchProviders();
+const crawlerImpls = getCrawlerImpls();
 
 export const WebBrowsingManifest: BuiltinToolManifest = {
   api: [
@@ -12,6 +16,11 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
       name: WebBrowsingApiName.search,
       parameters: {
         properties: {
+          provider: {
+            description: 'The search provider to use:',
+            enum: searchProviders,
+            type: 'string',
+          },
           query: {
             description: 'The search query',
             type: 'string',
@@ -67,6 +76,11 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
       name: WebBrowsingApiName.crawlSinglePage,
       parameters: {
         properties: {
+          provider: {
+            description: 'The crawler provider to use:',
+            enum: crawlerImpls,
+            type: 'string',
+          },
           url: {
             description: 'The url need to be crawled',
             type: 'string',
@@ -82,6 +96,11 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
       name: WebBrowsingApiName.crawlMultiPages,
       parameters: {
         properties: {
+          provider: {
+            description: 'The crawler provider to use:',
+            enum: crawlerImpls,
+            type: 'string',
+          },
           urls: {
             items: {
               description: 'The urls need to be crawled',
