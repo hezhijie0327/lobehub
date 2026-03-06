@@ -25,6 +25,14 @@ export interface StreamingContext {
 export interface ReasoningState {
   content?: string;
   duration?: number;
+  /**
+   * Encrypted reasoning content from API responses
+   */
+  encryptedContent?: string;
+  /**
+   * Reasoning item ID for Responses API
+   */
+  id?: string;
   isMultimodal?: boolean;
   signature?: string;
   tempDisplayContent?: MessageContentPart[];
@@ -69,6 +77,7 @@ export interface StreamingCallbacks {
  * Finish callback data
  */
 export interface FinishData {
+  encryptedReasoning?: string;
   grounding?: GroundingData;
   observationId?: string | null;
   reasoning?: { content?: string; signature?: string };
@@ -120,4 +129,5 @@ export type StreamChunk =
       images: { data: string; id: string }[];
       type: 'base64_image';
     }
+  | { encryptedContent: string; id: string; type: 'encrypted_reasoning' }
   | { type: 'stop' };

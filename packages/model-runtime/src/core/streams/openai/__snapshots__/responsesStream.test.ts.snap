@@ -164,6 +164,32 @@ exports[`OpenAIResponsesStream > should handle chunks with undefined values grac
 ]
 `;
 
+exports[`OpenAIResponsesStream > should handle encrypted reasoning content in response.output_item.done 1`] = `
+[
+  "id: resp_encrypted
+",
+  "event: data
+",
+  "data: "in_progress"
+
+",
+  "id: resp_encrypted
+",
+  "event: data
+",
+  "data: {"id":"rs_encrypted_123","type":"reasoning","summary":[]}
+
+",
+  "id: rs_encrypted_123
+",
+  "event: encrypted_reasoning
+",
+  "data: "g6LZZR+Ei+tsiEaKVvnh5fnpdOx71Cee/urDNIxYZTpuE3n0iAkj/E/796NZOOkKqkgNVMXUNPnQHMBVZrMbF/SQROCnvmKVT0WorULtR1YYa7cYcQmVzqTeahYCvhoVildmVF/nPh3czwIcsJ8zrvyiWq7K2+46jZXoBQN+JlBoAAR63qonlnz/WH0JqTR01v53biGOx2LEEWxKCdXEvYk3E//jC8wgnbP78BSfMASLkGSWEk6z2JytD7ZSqSRvByBSVg0FBnwEUG7QbxvkmIjBCvHdh/qRdZY6rodNQw+pGeLxbi5ixeuunE4fTyyYnuLs+NgpNo5IkMY2ZxOYoKkcpwBpyLvOYckHDyd0Bl1Vfj4PQm/1TdVR/QaEN1xfIPciImAE5VA0LMzXY64OeNTpP2zbBR3m3E8ItE4LaHdcbx1TL0Rpidy5NCY1yHTQg6ao53xWfrapUHTGFo7XRfxnUprfG+Vz6x8KzPggpCi2j6mgbYzkuPM05ZP9wyjbOmgnedPsSTfU2pUbxp0woJnwW3Css6IdLUVRd5957KrpiMD9gr2eq4ZlpkYsOlu3CPa8KrUboovZTx92KGmdkgdcqpME/wt8PuOFiOMSMOsqaqTgzJPnnutRvqz0zB9EzSF5rHfP3UK+R1YlAYQpkJE5/ocqyIOXLi9CcFI0b0EDYsEX8bd4oa/sXOeg9i3Mbf3XHpftg2sV/d8"
+
+",
+]
+`;
+
 exports[`OpenAIResponsesStream > should handle first chunk error with FIRST_CHUNK_ERROR_KEY 1`] = `
 [
   "id: first_chunk_error

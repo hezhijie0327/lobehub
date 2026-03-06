@@ -96,6 +96,8 @@ export interface StreamProtocolChunk {
     | 'usage'
     // performance monitor
     | 'speed'
+    // encrypted reasoning content (e.g., from xai/grok)
+    | 'encrypted_reasoning'
     // unknown data result
     | 'data';
 }
@@ -262,6 +264,7 @@ export function createCallbacksTransformer(cb: ChatStreamCallbacks | undefined) 
   const textEncoder = new TextEncoder();
   let aggregatedText = '';
   let aggregatedThinking: string | undefined = undefined;
+  let encryptedReasoning: string | undefined = undefined;
   let usage: ModelUsage | undefined;
   let speed: ModelPerformance | undefined;
   let grounding: any;
@@ -281,6 +284,7 @@ export function createCallbacksTransformer(cb: ChatStreamCallbacks | undefined) 
         speed,
         text: aggregatedText,
         thinking: aggregatedThinking,
+        encryptedReasoning,
         toolsCalling,
         usage,
       };
@@ -327,6 +331,11 @@ export function createCallbacksTransformer(cb: ChatStreamCallbacks | undefined) 
 
             aggregatedThinking += data;
             await callbacks.onThinking?.(data);
+            break;
+          }
+
+          case 'encrypted_reasoning': {
+            encryptedReasoning = data;
             break;
           }
 

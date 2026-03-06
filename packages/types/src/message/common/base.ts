@@ -50,6 +50,14 @@ export interface ModelReasoning {
   content?: string;
   duration?: number;
   /**
+   * Encrypted reasoning content from API responses
+   */
+  encryptedContent?: string;
+  /**
+   * Reasoning item ID for Responses API
+   */
+  id?: string;
+  /**
    * Flag indicating if content is multimodal (serialized MessageContentPart[])
    */
   isMultimodal?: boolean;
@@ -62,4 +70,5 @@ export const ModelReasoningSchema = z.object({
   duration: z.number().optional(),
   isMultimodal: z.boolean().optional(),
   signature: z.string().optional(),
+  encryptedContent: z.string().optional(),
 });

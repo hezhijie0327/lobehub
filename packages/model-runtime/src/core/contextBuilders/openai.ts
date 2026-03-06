@@ -78,6 +78,17 @@ export const convertOpenAIResponseInputs = async (
   const input: OpenAI.Responses.ResponseInputItem[] = [];
   await Promise.all(
     messages.map(async (message) => {
+      // if message has encrypted reasoning content, add it as a separate reasoning item
+      if (message.reasoning?.encryptedContent) {
+        input.push({
+          encrypted_content: message.reasoning.encryptedContent,
+          id: message.reasoning.id,
+          status: 'completed',
+          summary: [],
+          type: 'reasoning',
+        } as OpenAI.Responses.ResponseReasoningItem);
+      }
+
       // if message has reasoning, add it as a separate reasoning item
       if (message.reasoning?.content) {
         input.push({

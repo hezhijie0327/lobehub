@@ -53,6 +53,8 @@ export class StreamingHandler {
   private thinkingDuration?: number;
   private reasoningOperationId?: string;
   private reasoningParts: MessageContentPart[] = [];
+  private encryptedReasoningContent?: string;
+  private encryptedReasoningId?: string;
 
   // ========== Multimodal state ==========
   private contentParts: MessageContentPart[] = [];
@@ -101,6 +103,10 @@ export class StreamingHandler {
       }
       case 'reasoning': {
         this.handleReasoningChunk(chunk);
+        break;
+      }
+      case 'encrypted_reasoning': {
+        this.handleEncryptedReasoningChunk(chunk);
         break;
       }
       case 'reasoning_part': {
@@ -223,6 +229,21 @@ export class StreamingHandler {
     this.thinkingContent += chunk.text;
 
     this.callbacks.onReasoningUpdate({ content: this.thinkingContent });
+  }
+
+  private handleEncryptedReasoningChunk(chunk: {
+    encryptedContent: string;
+    id: string;
+    type: 'encrypted_reasoning';
+  }): void {
+    // Store encrypted reasoning content and id
+    this.encryptedReasoningContent = chunk.encryptedContent;
+    this.encryptedReasoningId = chunk.id;
+
+    // Update reasoning state with encrypted content
+    this.callbacks.onReasoningUpdate({
+      encryptedContent: this.encryptedReasoningContent,
+    });
   }
 
   private handleReasoningPartChunk(chunk: {
@@ -502,6 +523,15 @@ export class StreamingHandler {
       finalReasoning = {
         ...finishData.reasoning,
         duration: finalDuration,
+      };
+    }
+
+    // Add encrypted reasoning content if present
+    if (this.encryptedReasoningContent) {
+      finalReasoning = {
+        ...finalReasoning,
+        encryptedContent: this.encryptedReasoningContent,
+        id: this.encryptedReasoningId,
       };
     }
 
