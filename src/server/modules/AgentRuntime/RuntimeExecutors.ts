@@ -500,6 +500,7 @@ export const createRuntimeExecutors = (
 
       newState.messages.push({
         content,
+        reasoning: reasoningEncrypted || finalReasoning || undefined,
         role: 'assistant',
         tool_calls: tool_calls.length > 0 ? tool_calls : undefined,
       });
