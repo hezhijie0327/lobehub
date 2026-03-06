@@ -59,7 +59,7 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
           },
           provider: {
             description: 'The search provider to use.',
-            enum: getAvailableSearchProviders,
+            enum: getAvailableSearchProviders(),
             type: 'string',
           },
         },
@@ -79,7 +79,7 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
           },
           provider: {
             description: 'The crawler provider to use.',
-            enum: getAvailableCrawlProviders,
+            enum: getAvailableCrawlProviders(),
             type: 'string',
           },
         },
@@ -102,7 +102,7 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
           },
           provider: {
             description: 'The crawler provider to use.',
-            enum: getAvailableCrawlProviders,
+            enum: getAvailableCrawlProviders(),
             type: 'string',
           },
         },
@@ -122,8 +122,8 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
   },
   systemRole: systemPrompt(
     dayjs(new Date()).format('YYYY-MM-DD'),
-    getAvailableSearchProviders,
-    getAvailableCrawlProviders,
+    getAvailableSearchProviders(),
+    getAvailableCrawlProviders(),
   ),
   type: 'builtin',
 };
