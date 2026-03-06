@@ -45,6 +45,8 @@ export interface StreamingCallbacks {
     reasoning?: ReasoningState,
     contentMetadata?: { isMultimodal: boolean; tempDisplayContent: string },
   ) => void;
+  /** Encrypted content update */
+  onEncryptedContentUpdate: (content: string, itemId?: string) => void;
   /** Search grounding update */
   onGroundingUpdate: (grounding: GroundingData) => void;
   /** Image list update */
@@ -107,6 +109,7 @@ export interface StreamingResult {
 export type StreamChunk =
   | { text: string; type: 'text' }
   | { text: string; type: 'reasoning' }
+  | { content: string; itemId?: string; type: 'encrypted_content' }
   | { content: string; mimeType?: string; partType: 'text' | 'image'; type: 'reasoning_part' }
   | { content: string; mimeType?: string; partType: 'text' | 'image'; type: 'content_part' }
   | {

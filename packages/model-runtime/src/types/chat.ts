@@ -46,11 +46,13 @@ export type UserMessageContentPart =
 
 export interface OpenAIChatMessage {
   content: string | UserMessageContentPart[];
+  encryptedContent?: string;
   name?: string;
   reasoning?: {
     content?: string;
     duration?: number;
   };
+  reasoningItemId?: string;
   role: LLMRoleType;
   tool_call_id?: string;
   tool_calls?: MessageToolCall[];
@@ -268,6 +270,11 @@ export interface ChatStreamCallbacks {
    * Used for models that return structured content with mixed text and images.
    */
   onContentPart?: (data: ContentPartData) => Promise<void> | void;
+  /**
+   * `onEncryptedContent`: Called when encrypted content is received from the model.
+   * Used for models that return encrypted content (e.g., OpenAI o-series models).
+   */
+  onEncryptedContent?: (data: { content: string; itemId?: string }) => Promise<void> | void;
   /** `onError`: Called when a stream error event is received from the provider. */
   onError?: (error: any) => Promise<void> | void;
   /**

@@ -5,6 +5,7 @@ import { type StreamingCallbacks, type StreamingContext } from './types/streamin
 
 const createMockCallbacks = (): StreamingCallbacks => ({
   onContentUpdate: vi.fn(),
+  onEncryptedContentUpdate: vi.fn(),
   onReasoningUpdate: vi.fn(),
   onToolCallsUpdate: vi.fn(),
   onGroundingUpdate: vi.fn(),

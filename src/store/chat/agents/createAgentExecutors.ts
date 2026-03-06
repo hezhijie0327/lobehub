@@ -270,6 +270,19 @@ export const createAgentExecutors = (context: {
               { operationId: context.operationId },
             );
           },
+          onEncryptedContentUpdate: (content, itemId) => {
+            internal_dispatchMessage(
+              {
+                id: assistantMessageId,
+                type: 'updateMessage',
+                value: {
+                  encryptedContent: content,
+                  ...(itemId && { reasoningItemId: itemId }),
+                },
+              },
+              { operationId: context.operationId },
+            );
+          },
           onReasoningUpdate: (reasoning) => {
             internal_dispatchMessage(
               {

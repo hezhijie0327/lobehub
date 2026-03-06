@@ -113,6 +113,10 @@ export interface UIChatMessage {
   compressedMessages?: UIChatMessage[];
   content: string;
   createdAt: number;
+  /**
+   * Encrypted content from OpenAI o-series models
+   */
+  encryptedContent?: string | null;
   error?: ChatMessageError | null;
   // Extended fields
   extra?: ChatMessageExtra;
@@ -168,6 +172,11 @@ export interface UIChatMessage {
   ragQueryId?: string | null;
   ragRawQuery?: string | null;
   reasoning?: ModelReasoning | null;
+  /**
+   * Reasoning item ID from OpenAI Response API
+   * Used for maintaining context connection in multi-turn conversations
+   */
+  reasoningItemId?: string | null;
   /**
    * message role type
    */

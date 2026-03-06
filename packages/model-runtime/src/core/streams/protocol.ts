@@ -96,6 +96,8 @@ export interface StreamProtocolChunk {
     | 'usage'
     // performance monitor
     | 'speed'
+    // encrypted content
+    | 'encrypted_content'
     // unknown data result
     | 'data';
 }
@@ -349,6 +351,14 @@ export function createCallbacksTransformer(cb: ChatStreamCallbacks | undefined) 
               mimeType: partData.mimeType,
               partType: partData.partType,
               thoughtSignature: partData.thoughtSignature,
+            });
+            break;
+          }
+
+          case 'encrypted_content': {
+            await callbacks.onEncryptedContent?.({
+              content: data.content,
+              itemId: data.itemId,
             });
             break;
           }

@@ -103,6 +103,10 @@ export class StreamingHandler {
         this.handleReasoningChunk(chunk);
         break;
       }
+      case 'encrypted_content': {
+        this.handleEncryptedContentChunk(chunk);
+        break;
+      }
       case 'reasoning_part': {
         this.handleReasoningPartChunk(chunk);
         break;
@@ -223,6 +227,14 @@ export class StreamingHandler {
     this.thinkingContent += chunk.text;
 
     this.callbacks.onReasoningUpdate({ content: this.thinkingContent });
+  }
+
+  private handleEncryptedContentChunk(chunk: {
+    content: string;
+    itemId?: string;
+    type: 'encrypted_content';
+  }): void {
+    this.callbacks.onEncryptedContentUpdate(chunk.content, chunk.itemId);
   }
 
   private handleReasoningPartChunk(chunk: {
