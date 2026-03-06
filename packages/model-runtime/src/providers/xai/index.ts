@@ -55,6 +55,7 @@ export const LobeXAI = createOpenAICompatibleRuntime({
 
       return {
         ...rest,
+        include: ['reasoning.encrypted_content'],
         stream: payload.stream ?? true,
         tools: xaiTools,
       } as any;

@@ -78,6 +78,8 @@ export interface StreamProtocolChunk {
     | 'tool_calls'
     // Model Thinking
     | 'reasoning'
+    // encrypted reasoning content
+    | 'reasoning_encrypted'
     // use for reasoning signature, maybe only anthropic
     | 'reasoning_signature'
     // flagged reasoning signature
@@ -262,6 +264,14 @@ export function createCallbacksTransformer(cb: ChatStreamCallbacks | undefined) 
   const textEncoder = new TextEncoder();
   let aggregatedText = '';
   let aggregatedThinking: string | undefined = undefined;
+  let reasoningEncrypted:
+    | {
+        encrypted_content: string;
+        id: string;
+        summary?: any[];
+        type: 'reasoning';
+      }
+    | undefined;
   let usage: ModelUsage | undefined;
   let speed: ModelPerformance | undefined;
   let grounding: any;
@@ -278,6 +288,7 @@ export function createCallbacksTransformer(cb: ChatStreamCallbacks | undefined) 
       const data = {
         error: streamError,
         grounding,
+        reasoningEncrypted,
         speed,
         text: aggregatedText,
         thinking: aggregatedThinking,
@@ -327,6 +338,12 @@ export function createCallbacksTransformer(cb: ChatStreamCallbacks | undefined) 
 
             aggregatedThinking += data;
             await callbacks.onThinking?.(data);
+            break;
+          }
+
+          case 'reasoning_encrypted': {
+            reasoningEncrypted = data;
+            await callbacks.onReasoningEncrypted?.(data);
             break;
           }
 

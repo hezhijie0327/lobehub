@@ -1373,4 +1373,77 @@ describe('OpenAIResponsesStream', () => {
       expect(onCompletionMock).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Reasoning Encrypted Content', () => {
+    it('should handle reasoning.encrypted_content from x.ai', async () => {
+      const mockOpenAIStream = createReadableStream([
+        {
+          type: 'response.created',
+          response: {
+            id: 'resp_xai_reasoning',
+            status: 'in_progress',
+          },
+        },
+        {
+          type: 'response.output_item.added',
+          output_index: 0,
+          item: {
+            id: 'rs_xai_reasoning_123',
+            type: 'reasoning',
+            summary: [],
+            status: 'in_progress',
+          },
+        },
+        {
+          type: 'response.output_item.done',
+          output_index: 0,
+          item: {
+            id: 'rs_xai_reasoning_123',
+            type: 'reasoning',
+            summary: [],
+            status: 'completed',
+            encrypted_content:
+              'g6LZZR+Ei+tsiEaKVvnh5fnpdOx71Cee/urDNIxYZTpuE3n0iAkj/E/796NZOOkKqkgNVMXUNPnQHMBVZrMbF/SQROCnvmKVT0WorULtR1YYa7cYcQmVzqTeahYCvhoVildmVF/nPh3czwIcsJ8zrvyiWq7K2+46jZXoBQN+JlBoAAR63qonlnz/WH0JqTR01v53biGOx2LEEWxKCdXEvYk3E//jC8wgnbP78BSfMASLkGSWEk6z2JytD7ZSqSRvByBSVg0FBnwEUG7QbxvkmIjBCvHdh/qRdZY6rodNQw+pGeLxbi5ixeuunE4fTyyYnuLs+NgpNo5IkMY2ZxOYoKkcpwBpyLvOYckHDyd0Bl1Vfj4PQm/1TdVR/QaEN1xfIPciImAE5VA0LMzXY64OeNTpP2zbBR3m3E8ItE4LaHdcbx1TL0Rpidy5NCY1yHTQg6ao53xWfrapUHTGFo7XRfxnUprfG+Vz6x8KzPggpCi2j6mgbYzkuPM05ZP9wyjbOmgnedPsSTfU2pUbxp0woJnwW3Css6IdLUVRd5957KrpiMD9gr2eq4ZlpkYsOlu3CPa8KrUboovZTx92KGmdkgdcqpME/wt8PuOFiOMSMOsqaqTgzJPnnutRvqz0zB9EzSF5rHfP3UK+R1YlAYQpkJE5/ocqyIOXLi9CcFI0b0EDYsEX8bd4oa/sXOeg9i3Mbf3XHpftg2sV/d8',
+          },
+        },
+        {
+          type: 'response.output_item.added',
+          output_index: 1,
+          item: {
+            id: 'msg_xai_123',
+            type: 'message',
+            status: 'in_progress',
+            content: [],
+            role: 'assistant',
+          },
+        },
+        {
+          type: 'response.output_text.delta',
+          item_id: 'msg_xai_123',
+          delta: 'Hello!',
+        },
+        {
+          type: 'response.completed',
+          response: {
+            id: 'resp_xai_reasoning',
+            status: 'completed',
+            usage: {
+              input_tokens: 100,
+              output_tokens: 50,
+              total_tokens: 150,
+            },
+          },
+        },
+      ]);
+
+      const protocolStream = OpenAIResponsesStream(mockOpenAIStream, {
+        payload: { model: 'grok-4-1-fast-reasoning', provider: 'xai' },
+      });
+      const chunks = await readStreamChunk(protocolStream);
+
+      expect(chunks).toMatchSnapshot();
+      expect(chunks.some((c) => c.includes('event: reasoning_encrypted'))).toBe(true);
+      expect(chunks.some((c) => c.includes('encrypted_content'))).toBe(true);
+    });
+  });
 });

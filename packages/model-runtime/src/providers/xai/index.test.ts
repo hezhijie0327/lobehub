@@ -116,6 +116,40 @@ describe('LobeXAI - custom features', () => {
       const createCall = (instance['client'].responses.create as Mock).mock.calls[0][0];
       expect(createCall.tools).toEqual([{ type: 'web_search' }, { type: 'x_search' }]);
     });
+
+    it('should include reasoning.encrypted_content by default', async () => {
+      await instance.chat({
+        messages: [{ content: 'Hello', role: 'user' }],
+        model: 'grok-4-1-fast-reasoning',
+        apiMode: 'responses',
+      });
+
+      const createCall = (instance['client'].responses.create as Mock).mock.calls[0][0];
+      expect(createCall.include).toEqual(['reasoning.encrypted_content']);
+    });
+
+    it('should use existing include array if provided', async () => {
+      await instance.chat({
+        messages: [{ content: 'Hello', role: 'user' }],
+        model: 'grok-4-1-fast-reasoning',
+        apiMode: 'responses',
+        include: ['reasoning.summary'],
+      });
+
+      const createCall = (instance['client'].responses.create as Mock).mock.calls[0][0];
+      expect(createCall.include).toEqual(['reasoning.summary']);
+    });
+
+    it('should include reasoning.encrypted_content if include is empty array', async () => {
+      await instance.chat({
+        messages: [{ content: 'Hello', role: 'user' }],
+        model: 'grok-4-1-fast-reasoning',
+        apiMode: 'responses',
+      });
+
+      const createCall = (instance['client'].responses.create as Mock).mock.calls[0][0];
+      expect(createCall.include).toEqual(['reasoning.encrypted_content']);
+    });
   });
 
   describe('models', () => {

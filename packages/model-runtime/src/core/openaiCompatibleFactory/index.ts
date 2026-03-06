@@ -918,10 +918,18 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
 
       const inputStartAt = Date.now();
 
-      const { messages, reasoning_effort, tools, reasoning, responseMode, max_tokens, ...res } =
-        responses?.handlePayload
-          ? (responses?.handlePayload(payload, this._options) as ChatStreamPayload)
-          : payload;
+      const {
+        messages,
+        reasoning_effort,
+        tools,
+        reasoning,
+        responseMode,
+        max_tokens,
+        include,
+        ...res
+      } = responses?.handlePayload
+        ? (responses?.handlePayload(payload, this._options) as ChatStreamPayload)
+        : payload;
 
       // remove penalty params and chat completion specific params
       delete res.apiMode;
@@ -950,6 +958,7 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
               },
             }
           : {}),
+        include: include?.length ? include : undefined,
         input,
         ...(max_tokens && { max_output_tokens: max_tokens }),
         store: false,

@@ -117,6 +117,14 @@ export const createRuntimeExecutors = (
       let toolsCalling: ChatToolPayload[] = [];
       let tool_calls: MessageToolCall[] = [];
       let thinkingContent = '';
+      let reasoningEncrypted:
+        | {
+            encrypted_content: string;
+            id: string;
+            summary?: any[];
+            type: 'reasoning';
+          }
+        | undefined;
       const imageList: any[] = [];
       let grounding: any = null;
       let currentStepUsage: any = undefined;
@@ -285,6 +293,17 @@ export const createRuntimeExecutors = (
             // Capture usage (may or may not include cost)
             if (data.usage) {
               currentStepUsage = data.usage;
+            }
+          },
+          onFinal: async (data) => {
+            // Capture reasoning encrypted content for multi-turn conversation
+            if (data.reasoningEncrypted) {
+              reasoningEncrypted = data.reasoningEncrypted;
+              log(
+                `[${operationLogId}][reasoningEncrypted] captured, id: %s, length: %d`,
+                reasoningEncrypted.id,
+                reasoningEncrypted.encrypted_content.length,
+              );
             }
           },
           onGrounding: async (groundingData) => {
@@ -468,7 +487,7 @@ export const createRuntimeExecutors = (
           content: finalContent,
           imageList: imageList.length > 0 ? imageList : undefined,
           metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-          reasoning: finalReasoning,
+          reasoning: reasoningEncrypted || finalReasoning || undefined,
           search: grounding,
           tools: toolsCalling.length > 0 ? toolsCalling : undefined,
         });

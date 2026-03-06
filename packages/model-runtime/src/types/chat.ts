@@ -84,6 +84,10 @@ export interface ChatStreamPayload {
    */
   imageResolution?: '1K' | '2K' | '4K';
   /**
+   * Additional options to include in the response (for Responses API)
+   */
+  include?: string[];
+  /**
    * @title Maximum length of generated text
    */
   max_tokens?: number;
@@ -218,6 +222,12 @@ export interface ChatCompletionTool {
 export interface OnFinishData {
   error?: any;
   grounding?: any;
+  reasoningEncrypted?: {
+    encrypted_content: string;
+    id: string;
+    summary?: any[];
+    type: 'reasoning';
+  };
   speed?: ModelPerformance;
   text: string;
   thinking?: string;
@@ -273,6 +283,11 @@ export interface ChatStreamCallbacks {
    **/
   onFinal?: (data: OnFinishData) => Promise<void> | void;
   onGrounding?: (grounding: any) => Promise<void> | void;
+  /**
+   * `onReasoningEncrypted`: Called when encrypted reasoning content is received.
+   * Used for models that return encrypted reasoning data (e.g., x.ai grok reasoning models)
+   */
+  onReasoningEncrypted?: (data: { encrypted_content: string }) => Promise<void> | void;
   /**
    * `onReasoningPart`: Called for each reasoning/thinking part in multimodal output.
    * Used for models that return structured reasoning with mixed text and images.
