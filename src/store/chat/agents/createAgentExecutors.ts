@@ -430,6 +430,12 @@ export const createAgentExecutors = (context: {
           finalUsage = result.usage;
           finalToolCalls = result.toolCalls;
 
+          log(
+            '[optimisticUpdateMessageContent] messageId=%s, reasoning=%o',
+            assistantMessageId,
+            result.metadata.reasoning,
+          );
+
           await optimisticUpdateMessageContent(
             assistantMessageId,
             result.content,

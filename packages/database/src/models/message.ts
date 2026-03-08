@@ -1313,8 +1313,10 @@ export class MessageModel {
   update = async (
     id: string,
     { imageList, metadata, ...message }: Partial<UpdateMessageParams>,
-  ): Promise<{ success: boolean }> => {
+  ): Promise<{ success: boolean; messages?: UIChatMessage[] }> => {
     try {
+      let updatedMessages: UIChatMessage[] | undefined;
+
       await this.db.transaction(async (trx) => {
         // 1. insert message files
         if (imageList && imageList.length > 0) {
@@ -1339,12 +1341,23 @@ export class MessageModel {
           .update(messages)
           .set({ ...message, ...(mergedMetadata && { metadata: mergedMetadata }) })
           .where(and(eq(messages.id, id), eq(messages.userId, this.userId)));
+
+        // Fetch the updated message to return it
+        const [updated] = await trx
+          .select()
+          .from(messages)
+          .where(and(eq(messages.id, id), eq(messages.userId, this.userId)))
+          .limit(1);
+
+        if (updated.length > 0) {
+          updatedMessages = [updated[0] as any];
+        }
       });
 
-      return { success: true };
+      return { success: true, messages: updatedMessages };
     } catch (error) {
       console.error('Update message error:', error);
-      return { success: false };
+      return { success: false, messages: undefined };
     }
   };
 

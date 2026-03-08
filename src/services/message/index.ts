@@ -104,11 +104,13 @@ export class MessageService {
     value: Partial<UpdateMessageParams>,
     ctx?: MessageQueryContext,
   ): Promise<UpdateMessageResult> => {
-    return lambdaClient.message.update.mutate({
+    const result = await lambdaClient.message.update.mutate({
       ...ctx,
       id,
       value,
     });
+
+    return { ...result, messages: result.messages || undefined };
   };
 
   updateMessageTranslate = async (id: string, translate: Partial<ChatTranslate> | false) => {

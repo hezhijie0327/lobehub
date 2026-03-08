@@ -504,6 +504,13 @@ export class StreamingHandler {
     // Get encrypted_content from either stream or finishData
     const encryptedContent = this.encryptedContent || finishData.reasoning?.encrypted_content;
 
+    log(
+      '[buildFinalResult] messageId=%s, encryptedContent=%s, thinkingContent=%s',
+      this.context.messageId,
+      encryptedContent ? 'present' : 'missing',
+      this.thinkingContent ? 'present' : 'missing',
+    );
+
     let finalReasoning: ReasoningState | undefined;
     if (hasReasoningImages) {
       finalReasoning = {
