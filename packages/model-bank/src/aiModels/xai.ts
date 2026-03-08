@@ -4,11 +4,7 @@ import type { AIChatModelCard, AIImageModelCard } from '../types/aiModel';
 const xaiChatModels: AIChatModelCard[] = [
   {
     abilities: {
-      /*
-      Does not currently support client-side tools. Only supports xAI server side tools (eg X Search, Web Search tools) and remote MCP tools.
-
       functionCall: true,
-      */
       reasoning: true,
       search: true,
       structuredOutput: true,
@@ -244,6 +240,7 @@ const xaiChatModels: AIChatModelCard[] = [
     abilities: {
       functionCall: true,
       search: true,
+      structuredOutput: true,
       vision: true,
     },
     contextWindowTokens: 2_000_000,
@@ -285,6 +282,7 @@ const xaiChatModels: AIChatModelCard[] = [
       functionCall: true,
       reasoning: true,
       search: true,
+      structuredOutput: true,
       vision: true,
     },
     contextWindowTokens: 2_000_000,
@@ -325,6 +323,7 @@ const xaiChatModels: AIChatModelCard[] = [
     abilities: {
       functionCall: true,
       reasoning: true,
+      structuredOutput: true,
     },
     contextWindowTokens: 256_000,
     description:
@@ -350,6 +349,7 @@ const xaiChatModels: AIChatModelCard[] = [
       functionCall: true,
       reasoning: true,
       search: true,
+      structuredOutput: true,
       vision: true,
     },
     contextWindowTokens: 256_000,
@@ -376,6 +376,7 @@ const xaiChatModels: AIChatModelCard[] = [
     abilities: {
       functionCall: true,
       search: true,
+      structuredOutput: true,
     },
     contextWindowTokens: 131_072,
     description:
@@ -400,6 +401,7 @@ const xaiChatModels: AIChatModelCard[] = [
       functionCall: true,
       reasoning: true,
       search: true,
+      structuredOutput: true,
     },
     contextWindowTokens: 131_072,
     description:
