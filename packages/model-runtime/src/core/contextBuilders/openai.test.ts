@@ -398,6 +398,65 @@ describe('convertOpenAIResponseInputs', () => {
     ]);
   });
 
+  it('should extract reasoning.encrypted_content into a separate reasoning item', async () => {
+    const messages: OpenAIChatMessage[] = [
+      { content: 'system prompts', role: 'system' },
+      { content: '你好', role: 'user' },
+      {
+        content: 'hello',
+        role: 'assistant',
+        reasoning: {
+          encrypted_content: 'encrypted reasoning content',
+        },
+      },
+      { content: '杭州天气如何', role: 'user' },
+    ];
+
+    const result = await convertOpenAIResponseInputs(messages);
+
+    expect(result).toEqual([
+      { content: 'system prompts', role: 'developer' },
+      { content: '你好', role: 'user' },
+      {
+        summary: [],
+        type: 'reasoning',
+        encrypted_content: 'encrypted reasoning content',
+      },
+      { content: 'hello', role: 'assistant' },
+      { content: '杭州天气如何', role: 'user' },
+    ]);
+  });
+
+  it('should extract both reasoning.content and reasoning.encrypted_content into a separate reasoning item', async () => {
+    const messages: OpenAIChatMessage[] = [
+      { content: 'system prompts', role: 'system' },
+      { content: '你好', role: 'user' },
+      {
+        content: 'hello',
+        role: 'assistant',
+        reasoning: {
+          content: 'reasoning content',
+          encrypted_content: 'encrypted reasoning content',
+        },
+      },
+      { content: '杭州天气如何', role: 'user' },
+    ];
+
+    const result = await convertOpenAIResponseInputs(messages);
+
+    expect(result).toEqual([
+      { content: 'system prompts', role: 'developer' },
+      { content: '你好', role: 'user' },
+      {
+        summary: [{ text: 'reasoning content', type: 'summary_text' }],
+        type: 'reasoning',
+        encrypted_content: 'encrypted reasoning content',
+      },
+      { content: 'hello', role: 'assistant' },
+      { content: '杭州天气如何', role: 'user' },
+    ]);
+  });
+
   it('should handle openai and claude mixed message', async () => {
     // See: https://github.com/lobehub/lobehub/pull/12017
     const messages: OpenAIChatMessage[] = [

@@ -53,6 +53,7 @@ export class StreamingHandler {
   private thinkingDuration?: number;
   private reasoningOperationId?: string;
   private reasoningParts: MessageContentPart[] = [];
+  private encryptedContent?: string;
 
   // ========== Multimodal state ==========
   private contentParts: MessageContentPart[] = [];
@@ -101,6 +102,10 @@ export class StreamingHandler {
       }
       case 'reasoning': {
         this.handleReasoningChunk(chunk);
+        break;
+      }
+      case 'reasoning_encrypted': {
+        this.handleReasoningEncryptedChunk(chunk);
         break;
       }
       case 'reasoning_part': {
@@ -223,6 +228,18 @@ export class StreamingHandler {
     this.thinkingContent += chunk.text;
 
     this.callbacks.onReasoningUpdate({ content: this.thinkingContent });
+  }
+
+  private handleReasoningEncryptedChunk(chunk: {
+    encrypted_content: string;
+    type: 'reasoning_encrypted';
+  }): void {
+    this.encryptedContent = chunk.encrypted_content;
+
+    this.callbacks.onReasoningUpdate({
+      content: this.thinkingContent,
+      encrypted_content: this.encryptedContent,
+    });
   }
 
   private handleReasoningPartChunk(chunk: {
@@ -484,6 +501,9 @@ export class StreamingHandler {
     // Get signature from finishData.reasoning (provided by backend in onFinish)
     const reasoningSignature = finishData.reasoning?.signature;
 
+    // Get encrypted_content from either stream or finishData
+    const encryptedContent = this.encryptedContent || finishData.reasoning?.encrypted_content;
+
     let finalReasoning: ReasoningState | undefined;
     if (hasReasoningImages) {
       finalReasoning = {
@@ -491,12 +511,14 @@ export class StreamingHandler {
         duration: finalDuration,
         isMultimodal: true,
         signature: reasoningSignature,
+        encrypted_content: encryptedContent,
       };
-    } else if (this.thinkingContent) {
+    } else if (this.thinkingContent || encryptedContent) {
       finalReasoning = {
         content: this.thinkingContent,
         duration: finalDuration,
         signature: reasoningSignature,
+        encrypted_content: encryptedContent,
       };
     } else if (finishData.reasoning?.content) {
       finalReasoning = {

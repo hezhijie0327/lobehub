@@ -65,6 +65,10 @@ export interface StreamContext {
    */
   tools?: Record<number, { id: string; index: number; name: string }>;
   usage?: ModelUsage;
+  /**
+   * Encrypted reasoning content from providers (e.g., xAI Grok models)
+   */
+  encrypted_content?: string;
 }
 
 export interface StreamProtocolChunk {
@@ -88,6 +92,8 @@ export interface StreamProtocolChunk {
     | 'content_part'
     // Search or Grounding
     | 'grounding'
+    // encrypted reasoning content (e.g., xAI Grok)
+    | 'reasoning_encrypted'
     // stop signal
     | 'stop'
     // Error

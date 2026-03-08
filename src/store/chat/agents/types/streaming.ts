@@ -28,6 +28,10 @@ export interface ReasoningState {
   isMultimodal?: boolean;
   signature?: string;
   tempDisplayContent?: MessageContentPart[];
+  /**
+   * Encrypted reasoning content from providers (e.g., xAI Grok models)
+   */
+  encrypted_content?: string;
 }
 
 /**
@@ -71,7 +75,7 @@ export interface StreamingCallbacks {
 export interface FinishData {
   grounding?: GroundingData;
   observationId?: string | null;
-  reasoning?: { content?: string; signature?: string };
+  reasoning?: { content?: string; signature?: string; encrypted_content?: string };
   speed?: ModelPerformance;
   toolCalls?: MessageToolCall[];
   traceId?: string | null;
@@ -107,6 +111,7 @@ export interface StreamingResult {
 export type StreamChunk =
   | { text: string; type: 'text' }
   | { text: string; type: 'reasoning' }
+  | { encrypted_content: string; type: 'reasoning_encrypted' }
   | { content: string; mimeType?: string; partType: 'text' | 'image'; type: 'reasoning_part' }
   | { content: string; mimeType?: string; partType: 'text' | 'image'; type: 'content_part' }
   | {

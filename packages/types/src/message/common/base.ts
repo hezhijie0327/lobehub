@@ -55,6 +55,11 @@ export interface ModelReasoning {
   isMultimodal?: boolean;
   signature?: string;
   tempDisplayContent?: MessageContentPart[];
+  /**
+   * Encrypted reasoning content from providers (e.g., xAI Grok models)
+   * Base64-encoded encrypted reasoning data
+   */
+  encrypted_content?: string;
 }
 
 export const ModelReasoningSchema = z.object({
@@ -62,4 +67,5 @@ export const ModelReasoningSchema = z.object({
   duration: z.number().optional(),
   isMultimodal: z.boolean().optional(),
   signature: z.string().optional(),
+  encrypted_content: z.string().optional(),
 });

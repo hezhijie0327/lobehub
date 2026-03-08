@@ -86,6 +86,14 @@ export const convertOpenAIResponseInputs = async (
         } as OpenAI.Responses.ResponseReasoningItem);
       }
 
+      // if message has encrypted reasoning, add it as a separate reasoning item
+      if (message.reasoning?.encrypted_content) {
+        input.push({
+          encrypted_content: message.reasoning.encrypted_content,
+          type: 'reasoning',
+        } as OpenAI.Responses.ResponseReasoningItem);
+      }
+
       // if message is assistant messages with tool calls , transform it to function type item
       if (message.role === 'assistant' && message.tool_calls && message.tool_calls?.length > 0) {
         message.tool_calls?.forEach((tool) => {

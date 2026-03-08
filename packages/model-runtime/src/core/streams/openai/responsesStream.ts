@@ -145,6 +145,19 @@ const transformOpenAIStream = (
       }
 
       case 'response.output_item.done': {
+        if (
+          chunk.item.type === 'reasoning' &&
+          'encrypted_content' in chunk.item &&
+          chunk.item.encrypted_content
+        ) {
+          streamContext.encrypted_content = chunk.item.encrypted_content;
+          return {
+            data: { encrypted_content: chunk.item.encrypted_content },
+            id: chunk.item.id,
+            type: 'reasoning_encrypted',
+          };
+        }
+
         if (streamContext.returnedCitationArray?.length) {
           return {
             data: { citations: streamContext.returnedCitationArray },

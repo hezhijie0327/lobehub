@@ -709,6 +709,45 @@ describe('OpenAIResponsesStream', () => {
     expect(chunks).toMatchSnapshot();
   });
 
+  it('should handle response.output_item.done with encrypted_content', async () => {
+    const mockOpenAIStream = createReadableStream([
+      {
+        type: 'response.created',
+        response: {
+          id: 'resp_encrypted',
+          status: 'in_progress',
+        },
+      },
+      {
+        type: 'response.output_item.added',
+        output_index: 0,
+        item: {
+          id: 'rs_test_id',
+          type: 'reasoning',
+          status: 'in_progress',
+        },
+      },
+      {
+        type: 'response.output_item.done',
+        output_index: 0,
+        item: {
+          id: 'rs_test_id',
+          type: 'reasoning',
+          status: 'completed',
+          encrypted_content:
+            'bvV88j99ILvgfHRTHCUSJtw+ISji6txJzPdZNbcSVuDk4OMG2Z9r5wOBBwjd3u3Hhm9XtpCWJO1YgTOlpgbn+g7DZX+pOagYYrCFUpQ19XkWz6Je8bHG9JcSDoGDqNgRbDbAUO8at6RCyqgPupJj5ArBDCt73fGQLTC4G3S0JMK9LsPiWz6GPj6qyzYoRzkj4R6bntRm74E4h8Y+z6u6B7+ixPSv8s1EFs8c+NUAB8TNKZZpXZquj2LXfx1xAie85Syl7qLqxLNtDG1dNBhBnHpYoE4gQzwyXqywf5pF2Q2imzPNzGQhurK+6gaNWgZbxRmjhdsW6TnzO5Kk6pzb5qpfgfcEScQeYHSj5GpD+yDUCNlhdbzhhWnEErH+wuBPpTG6UQhiC7m7yrJ7IY2E8K/BeUPlUvkhMaMwb4dA279pWMJdchNJ+TAxca+JVc80pXMG/PmrQUNJU9qdXRLbNmQbRadBNwV2qkPfgggL3q0yNd7Un9P+atmP3B9keBILif3ufsBDtVUobEniiyGV7YVDvQ/fQRVs7XDxJiOKkogjjQySyHgpjseO8iG5xtb9mrz6B3mDvv2aAuyDL6MHZRM7QDVPjUbgNMzDm5Sm3J7IhtzfR+3eMDws3qeTsxOt1KOslu983Btv1Wx37b5HJqX1pQU1dae/kOSJ7MifFd6wMkQtQBDgVoG3ka9wq5Vxq9Ki8bDOOMcwA2kUXhCcY3TZCXJfDWSKPTcCoNCYIv5LT2NFVdamiSfLIyeOjBNz459BfMvAoOZShFViQyc5YwjnReUQPQ8a18jcz8GoAK1O99e0h91oYxIgDV52EfS+IYrzqvJOEQbKQinB+LJwkPbBEp7ZtgAtiNBzm985hNgLfiBaVFWcRYwI3tNBCT1vkw2YI0NEEG0yOF29x9+u64XzqyP1CX1pU6sGXEFn3RPdfYibf6bt/Y1BRqBL5l0CrXWsgDw02SqIFta8OvJ7Iwmq40/4acE/Ew6eWO/z2MHkWgqSpwGNjn7MfeKkTi44foZjfNqN9QOFQt6VG2tY+biKZDo0h9DAftae8Q2Xs2UDvsBYOm7YEahVkput6/uKzxljpXlz269qHk6ckvdN9hKLbaTO3/IZPCCPQ5a/a/sWn/1VOJj72sDk+23RNjBf0FL6bJMXZI5aQdtxbF1zij9mWcP9nJ9FHhj53ytuf1NiKl5xU8ZsaoKmCAJcXUz1n2FZvyWlqvgPYiszc7R8Y5dF6QbW2mlKnXzVy6qRMHNeQqGhCEncyT5nPNSdK5QlUwLokAIg',
+        },
+      },
+    ]);
+
+    const protocolStream = OpenAIResponsesStream(mockOpenAIStream);
+    const chunks = await readStreamChunk(protocolStream);
+
+    expect(chunks).toMatchSnapshot();
+    expect(chunks.some((c) => c.includes('event: reasoning_encrypted'))).toBe(true);
+    expect(chunks.some((c) => c.includes('encrypted_content'))).toBe(true);
+  });
+
   it('should handle response.completed with usage', async () => {
     const mockOpenAIStream = createReadableStream([
       {

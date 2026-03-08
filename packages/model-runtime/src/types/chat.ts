@@ -50,6 +50,10 @@ export interface OpenAIChatMessage {
   reasoning?: {
     content?: string;
     duration?: number;
+    /**
+     * Encrypted reasoning content from providers (e.g., xAI Grok models)
+     */
+    encrypted_content?: string;
   };
   role: LLMRoleType;
   tool_call_id?: string;
