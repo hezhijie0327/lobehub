@@ -57,6 +57,7 @@ const wenxinChatModels: AIChatModelCard[] = [
       functionCall: true,
       reasoning: true,
       search: true,
+      video: true,
       vision: true,
     },
     contextWindowTokens: 131_072,
@@ -434,6 +435,7 @@ const wenxinChatModels: AIChatModelCard[] = [
   },
   {
     abilities: {
+      video: true,
       vision: true,
     },
     contextWindowTokens: 131_072,
@@ -457,6 +459,7 @@ const wenxinChatModels: AIChatModelCard[] = [
   },
   {
     abilities: {
+      video: true,
       vision: true,
     },
     contextWindowTokens: 131_072,
@@ -477,6 +480,7 @@ const wenxinChatModels: AIChatModelCard[] = [
   },
   {
     abilities: {
+      video: true,
       vision: true,
     },
     contextWindowTokens: 32_768,
@@ -497,6 +501,7 @@ const wenxinChatModels: AIChatModelCard[] = [
   },
   {
     abilities: {
+      video: true,
       vision: true,
     },
     contextWindowTokens: 32_768,
@@ -520,6 +525,7 @@ const wenxinChatModels: AIChatModelCard[] = [
   },
   {
     abilities: {
+      video: true,
       vision: true,
     },
     contextWindowTokens: 131_072,
@@ -1047,6 +1053,7 @@ const wenxinChatModels: AIChatModelCard[] = [
   },
   {
     abilities: {
+      video: true,
       vision: true,
     },
     contextWindowTokens: 32_768,
@@ -1066,6 +1073,7 @@ const wenxinChatModels: AIChatModelCard[] = [
   },
   {
     abilities: {
+      video: true,
       vision: true,
     },
     contextWindowTokens: 16_384,
