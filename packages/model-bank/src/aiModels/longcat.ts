@@ -4,6 +4,27 @@ const longcatModels: AIChatModelCard[] = [
   {
     abilities: {
       functionCall: true,
+      video: true,
+      vision: true,
+    },
+    contextWindowTokens: 8192,
+    description:
+      'LongCat-Flash-Omni-2603 has been officially released. As an upgraded version of LongCat-Flash-Omni, it is an end-to-end Omni interaction model with higher human-like response quality and stronger full-modal perception capabilities. It can be used for free in LongCat Chat, or accessed via API by specifying `model=LongCat-Flash-Omni-2603`. Compared with the LongCat-Flash-Omni model, the key features of LongCat-Flash-Omni-2603 include: Deeper semantic alignment and personalized style adaptation, providing a more natural and smooth conversational experience. Comprehensive improvements in multimodal task accuracy, including vision, speech, and text. Significantly enhanced performance in problem-solving, emotional understanding, and everyday entertainment scenarios. Native voice Function Call support, enabling direct parsing of audio commands with near-zero-latency real-time interaction.',
+    displayName: 'LongCat-Flash-Omni-2603',
+    enabled: true,
+    id: 'LongCat-Flash-Omni-2603',
+    pricing: {
+      units: [
+        { name: 'textInput', rate: 0, strategy: 'fixed', unit: 'millionTokens' },
+        { name: 'textOutput', rate: 0, strategy: 'fixed', unit: 'millionTokens' },
+      ],
+    },
+    releasedAt: '2026-03-11',
+    type: 'chat',
+  },
+  {
+    abilities: {
+      functionCall: true,
     },
     contextWindowTokens: 327_680,
     description:
@@ -29,7 +50,6 @@ const longcatModels: AIChatModelCard[] = [
     description:
       'The LongCat-Flash-Thinking-2601 model has been officially released. As an upgraded reasoning model built on a Mixture-of-Experts (MoE) architecture, it features a total of 560 billion parameters. While maintaining strong competitiveness across traditional reasoning benchmarks, it systematically enhances Agent-level reasoning capabilities through large-scale multi-environment reinforcement learning. Compared to the LongCat-Flash-Thinking model, the key upgrades are as follows: Extreme Robustness in Noisy Environments: Through systematic curriculum-style training targeting noise and uncertainty in real-world settings, the model demonstrates outstanding performance in Agent tool invocation, Agent-based search, and tool-integrated reasoning, with significantly improved generalization. Powerful Agent Capabilities: By constructing a tightly coupled dependency graph encompassing more than 60 tools, and scaling training through multi-environment expansion and large-scale exploratory learning, the model markedly improves its ability to generalize to complex and out-of-distribution real-world scenarios. Advanced Deep Thinking Mode: It expands the breadth of reasoning via parallel inference and deepens analytical capability through recursive feedback-driven summarization and abstraction mechanisms, effectively addressing highly challenging problems.',
     displayName: 'LongCat-Flash-Thinking-2601',
-    enabled: true,
     id: 'LongCat-Flash-Thinking-2601',
     pricing: {
       units: [
@@ -49,6 +69,7 @@ const longcatModels: AIChatModelCard[] = [
     description:
       'LongCat-Flash-Thinking has been officially released and open-sourced simultaneously. It is a deep reasoning model that can be used for free conversations within LongCat Chat, or accessed via API by specifying model=LongCat-Flash-Thinking.',
     displayName: 'LongCat-Flash-Thinking',
+    enabled: true,
     id: 'LongCat-Flash-Thinking',
     pricing: {
       units: [
@@ -56,7 +77,7 @@ const longcatModels: AIChatModelCard[] = [
         { name: 'textOutput', rate: 0, strategy: 'fixed', unit: 'millionTokens' },
       ],
     },
-    releasedAt: '2025-09-22',
+    releasedAt: '2026-03-12',
     type: 'chat',
   },
   {

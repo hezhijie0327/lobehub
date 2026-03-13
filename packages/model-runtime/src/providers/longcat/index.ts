@@ -1,5 +1,6 @@
 import { ModelProvider } from 'model-bank';
 
+import { transformLongCatMessage } from '../../core/contextBuilders/longcat';
 import { createOpenAICompatibleRuntime } from '../../core/openaiCompatibleFactory';
 
 export const LobeLongCatAI = createOpenAICompatibleRuntime({
@@ -8,9 +9,15 @@ export const LobeLongCatAI = createOpenAICompatibleRuntime({
     handlePayload: (payload) => {
       const { frequency_penalty, presence_penalty, ...rest } = payload;
 
+      const messages = payload.messages.map((message) => ({
+        ...message,
+        content: transformLongCatMessage(message.content),
+      }));
+
       return {
         ...rest,
         frequency_penalty: undefined,
+        messages,
         presence_penalty: undefined,
         stream: true,
       } as any;
