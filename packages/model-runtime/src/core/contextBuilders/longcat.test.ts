@@ -5,16 +5,16 @@ import { transformLongCatMessage } from './longcat';
 
 describe('transformLongCatMessage', () => {
   describe('string content', () => {
-    it('should return string content unchanged', () => {
+    it('should convert string content to text array format', () => {
       const content = 'Hello, world!';
       const result = transformLongCatMessage(content);
-      expect(result).toBe('Hello, world!');
+      expect(result).toEqual([{ type: 'text', text: 'Hello, world!' }]);
     });
 
-    it('should return empty string unchanged', () => {
+    it('should convert empty string to text array format', () => {
       const content = '';
       const result = transformLongCatMessage(content);
-      expect(result).toBe('');
+      expect(result).toEqual([{ type: 'text', text: '' }]);
     });
   });
 
@@ -43,7 +43,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'https://example.com/image.jpg',
+            data: ['https://example.com/image.jpg'],
             type: 'url',
           },
         },
@@ -62,7 +62,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'data:image/jpeg;base64,abc123',
+            data: ['data:image/jpeg;base64,abc123'],
             type: 'base64',
           },
         },
@@ -81,7 +81,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'data:image/png;base64,xyz789',
+            data: ['data:image/png;base64,xyz789'],
             type: 'base64',
           },
         },
@@ -163,7 +163,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'https://example.com/image.png',
+            data: ['https://example.com/image.png'],
             type: 'url',
           },
         },
@@ -197,21 +197,21 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'https://example.com/image1.jpg',
+            data: ['https://example.com/image1.jpg'],
             type: 'url',
           },
         },
         {
           type: 'input_image',
           input_image: {
-            data: 'https://example.com/image2.jpg',
+            data: ['https://example.com/image2.jpg'],
             type: 'url',
           },
         },
         {
           type: 'input_image',
           input_image: {
-            data: 'data:image/jpeg;base64,base64img',
+            data: ['data:image/jpeg;base64,base64img'],
             type: 'base64',
           },
         },
@@ -305,7 +305,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'https://example.com/photo.jpeg',
+            data: ['https://example.com/photo.jpeg'],
             type: 'url',
           },
         },
@@ -351,7 +351,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'data:image/png;base64,img123',
+            data: ['data:image/png;base64,img123'],
             type: 'base64',
           },
         },
@@ -390,7 +390,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'https://cdn.example.com/img1.jpg',
+            data: ['https://cdn.example.com/img1.jpg'],
             type: 'url',
           },
         },
@@ -406,7 +406,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'data:image/webp;base64,webpdata',
+            data: ['data:image/webp;base64,webpdata'],
             type: 'base64',
           },
         },
@@ -460,7 +460,7 @@ describe('transformLongCatMessage', () => {
         {
           type: 'input_image',
           input_image: {
-            data: 'data:application/octet-stream;base64,rawdata',
+            data: ['data:application/octet-stream;base64,rawdata'],
             type: 'base64',
           },
         },

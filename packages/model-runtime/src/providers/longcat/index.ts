@@ -9,15 +9,16 @@ export const LobeLongCatAI = createOpenAICompatibleRuntime({
     handlePayload: (payload) => {
       const { frequency_penalty, presence_penalty, ...rest } = payload;
 
-      const messages = payload.messages.map((message) => ({
-        ...message,
-        content: transformLongCatMessage(message.content),
-      }));
-
       return {
         ...rest,
+        ...(payload.model.includes('Omni') && {
+          messages: payload.messages.map((message) => ({
+            ...message,
+            content: transformLongCatMessage(message.content),
+          })),
+          output_modalities: ['text'],
+        }),
         frequency_penalty: undefined,
-        messages,
         presence_penalty: undefined,
         stream: true,
       } as any;

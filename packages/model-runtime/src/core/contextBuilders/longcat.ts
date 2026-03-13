@@ -1,16 +1,20 @@
 import type { OpenAIChatMessage } from '../../types';
 
 /**
- * Transform generic OpenAI format to LongCat specific format
- * LongCat requires nested object structure for images/videos:
- * - image_url: { url: string } -> input_image: { data: string, type: 'url' | 'base64' }
- * - video_url: { url: string } -> input_video: { data: string, type: 'url' | 'base64' }
+ * Transform generic OpenAI format to LongCat Omni specific format
+ * LongCat Omni models require:
+ * 1. All content must be array format: [{type: "text", text: "..."}]
+ * 2. image_url: { url: string } -> input_image: { data: string[], type: 'url' | 'base64' }
+ * 3. video_url: { url: string } -> input_video: { data: string, type: 'url' | 'base64' }
+ *
+ * Note: Only image data is an array, video data is a single string
  */
 export const transformLongCatMessage = (
   content: string | OpenAIChatMessage['content'],
 ): OpenAIChatMessage['content'] => {
+  // Convert string content to text array format
   if (typeof content === 'string') {
-    return content;
+    return [{ type: 'text', text: content }];
   }
 
   return content.map((part) => {
@@ -20,7 +24,7 @@ export const transformLongCatMessage = (
 
       return {
         input_image: {
-          data: url,
+          data: [url],
           type: isBase64 ? 'base64' : 'url',
         },
         type: 'input_image',
@@ -40,6 +44,7 @@ export const transformLongCatMessage = (
       } as any;
     }
 
+    // Preserve text and other content types as is
     return part;
   });
 };
