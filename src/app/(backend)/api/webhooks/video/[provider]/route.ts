@@ -51,8 +51,17 @@ export const POST = async (req: Request, { params }: { params: Promise<{ provide
 
   try {
     // Parse webhook body using provider-specific handler
-    const runtime = ModelRuntime.initializeWithProvider(provider, {});
-    const result = await runtime.handleCreateVideoWebhook({ body });
+    let result;
+
+    // Volcengine webhook handler doesn't need API key, so import directly to avoid InvalidProviderAPIKey error
+    if (provider === 'volcengine') {
+      const { handleVolcengineVideoWebhook } =
+        await import('@lobechat/model-runtime/volcengine/video');
+      result = await handleVolcengineVideoWebhook({ body });
+    } else {
+      const runtime = ModelRuntime.initializeWithProvider(provider, {});
+      result = await runtime.handleCreateVideoWebhook({ body });
+    }
 
     if (!result) {
       return NextResponse.json(

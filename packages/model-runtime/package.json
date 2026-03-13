@@ -4,7 +4,8 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
-    "./vertexai": "./src/providers/vertexai/index.ts"
+    "./vertexai": "./src/providers/vertexai/index.ts",
+    "./volcengine/video": "./src/providers/volcengine/video/handleCreateVideoWebhook.ts"
   },
   "scripts": {
     "test": "vitest",
