@@ -74,7 +74,32 @@ const ResolutionItem = memo(() => {
 });
 
 const DurationItem = memo(() => {
-  const { value, setValue, min, max, step } = useVideoGenerationConfigParam('duration');
+  const { t } = useTranslation('video');
+  const { value, setValue, min, max, step, enumValues } = useVideoGenerationConfigParam('duration');
+
+  const options = useMemo(
+    () =>
+      enumValues && enumValues.length > 0
+        ? enumValues.map((v) => ({
+            label: `${v}${t('config.duration.seconds')}`,
+            value: v,
+          }))
+        : [],
+    [enumValues, t],
+  );
+
+  if (options.length > 0) {
+    return (
+      <Segmented
+        block
+        options={options}
+        style={{ width: '100%' }}
+        value={value ?? min}
+        variant="filled"
+        onChange={(v) => setValue(Number(v) as any)}
+      />
+    );
+  }
 
   return (
     <SliderWithInput
