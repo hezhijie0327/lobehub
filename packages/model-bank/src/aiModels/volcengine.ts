@@ -1,4 +1,9 @@
-import { type AIChatModelCard, type AIImageModelCard } from '../types/aiModel';
+import {
+  type AIChatModelCard,
+  type AIImageModelCard,
+  type AIVideoModelCard,
+} from '../types/aiModel';
+import { seedance15ProParams } from './lobehub/video';
 
 // https://www.volcengine.com/docs/82379/1330310
 
@@ -1244,6 +1249,35 @@ const volcengineImageModels: AIImageModelCard[] = [
   },
 ];
 
-export const allModels = [...doubaoChatModels, ...volcengineImageModels];
+const volcengineVideoModels: AIVideoModelCard[] = [
+  {
+    description:
+      'Seedance 1.5 Pro by ByteDance supports text-to-video, image-to-video (first frame, first+last frame), and audio generation synchronized with visuals.',
+    displayName: 'Seedance 1.5 Pro',
+    enabled: true,
+    id: 'doubao-seedance-1-5-pro-251215',
+    organization: 'ByteDance',
+    parameters: seedance15ProParams,
+    pricing: {
+      approximatePricePerVideo: 0.25,
+      currency: 'CNY',
+      units: [
+        {
+          lookup: {
+            pricingParams: ['generateAudio'],
+            prices: { false: 1.2, true: 2.4 },
+          },
+          name: 'videoGeneration',
+          strategy: 'lookup',
+          unit: 'millionTokens',
+        },
+      ],
+    },
+    releasedAt: '2025-12-15',
+    type: 'video',
+  },
+];
+
+export const allModels = [...doubaoChatModels, ...volcengineImageModels, ...volcengineVideoModels];
 
 export default allModels;
