@@ -3,6 +3,7 @@ import { ModelProvider } from 'model-bank';
 import { createOpenAICompatibleRuntime } from '../../core/openaiCompatibleFactory';
 import { MODEL_LIST_CONFIGS, processModelList } from '../../utils/modelParse';
 import { createXAIImage } from './createImage';
+import { createXAIVideo } from './createVideo';
 
 export interface XAIModelCard {
   id: string;
@@ -14,6 +15,7 @@ export const LobeXAI = createOpenAICompatibleRuntime({
     useResponse: true,
   },
   createImage: createXAIImage,
+  createVideo: createXAIVideo,
   debug: {
     chatCompletion: () => process.env.DEBUG_XAI_CHAT_COMPLETION === '1',
     responses: () => process.env.DEBUG_XAI_RESPONSES === '1',

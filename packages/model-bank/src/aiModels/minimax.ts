@@ -244,7 +244,7 @@ const minimaxVideoModels: AIVideoModelCard[] = [
       prompt: { default: '' },
       resolution: {
         default: '768P',
-        enum: ['768P', '1080p'],
+        enum: ['768P', '1080P'],
       },
     },
     pricing: {
@@ -268,7 +268,7 @@ const minimaxVideoModels: AIVideoModelCard[] = [
       prompt: { default: '' },
       resolution: {
         default: '768P',
-        enum: ['768P', '1080p'],
+        enum: ['768P', '1080P'],
       },
     },
     pricing: {
@@ -295,7 +295,7 @@ const minimaxVideoModels: AIVideoModelCard[] = [
       prompt: { default: '' },
       resolution: {
         default: '768P',
-        enum: ['512P', '768P', '1080p'],
+        enum: ['512P', '768P', '1080P'],
       },
     },
     pricing: {
