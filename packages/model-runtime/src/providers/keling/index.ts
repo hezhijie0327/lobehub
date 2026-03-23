@@ -4,10 +4,13 @@ import type { ClientOptions } from 'openai';
 import type { LobeRuntimeAI } from '../../core/BaseAI';
 import { AgentRuntimeErrorType } from '../../types/error';
 import type { CreateImagePayload, CreateImageResponse } from '../../types/image';
+import type { CreateVideoPayload, CreateVideoResponse } from '../../types/video';
 import { AgentRuntimeError } from '../../utils/createError';
 import { createKelingImage } from './createImage';
+import { createKelingVideo } from './video/createVideo';
 
 const log = createDebug('lobe-image:keling');
+const videoLog = createDebug('lobe-video:keling');
 
 export class LobeKelingAI implements LobeRuntimeAI {
   baseURL?: string;
@@ -53,6 +56,30 @@ export class LobeKelingAI implements LobeRuntimeAI {
       }
 
       if (error instanceof Error && error.message.includes('secretKey')) {
+        throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidProviderAPIKey, {
+          error,
+        });
+      }
+
+      throw AgentRuntimeError.createError(AgentRuntimeErrorType.ProviderBizError, { error });
+    }
+  }
+
+  async createVideo(payload: CreateVideoPayload): Promise<CreateVideoResponse> {
+    const { model, params } = payload;
+    videoLog('Creating video with model: %s and params: %O', model, params);
+
+    try {
+      return await createKelingVideo(payload, {
+        apiKey: this.apiKey,
+        baseURL: this.baseURL,
+        provider: 'keling',
+        secretKey: this.secretKey,
+      });
+    } catch (error) {
+      videoLog('Error in createVideo: %O', error);
+
+      if (error instanceof Error && 'status' in error && (error as any).status === 401) {
         throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidProviderAPIKey, {
           error,
         });
