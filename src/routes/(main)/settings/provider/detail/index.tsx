@@ -41,6 +41,10 @@ const Azure = dynamic(() => import('./azure'), {
   loading: () => <Loading debugId="Provider > Azure" />,
   ssr: false,
 });
+const Keling = dynamic(() => import('./keling'), {
+  loading: () => <Loading debugId="Provider > Keling" />,
+  ssr: false,
+});
 const ProviderGrid = dynamic(() => import('../(list)/ProviderGrid'), {
   loading: () => <Loading debugId="Provider > Grid" />,
   ssr: false,
@@ -91,6 +95,9 @@ const ProviderDetailPage = (props: ProviderDetailPageProps) => {
     }
     case 'vertexai': {
       return <VertexAI />;
+    }
+    case 'keling': {
+      return <Keling />;
     }
     default: {
       return <DefaultPage id={id} />;
