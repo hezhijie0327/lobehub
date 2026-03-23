@@ -177,15 +177,14 @@ async function buildRequestPayload(
     case KELING_MULTI_IMAGE_ENDPOINT: {
       return buildMultiImage2ImageRequest(model, params);
     }
-    case KELING_ENDPOINTS['kling-v2-1']:
     default: {
       return buildGenerationsRequest(model, params);
     }
   }
 }
 
-function generateAuthToken(apiKey: string, secretKey: string): string {
-  const token = createJWT(apiKey, secretKey, 1800);
+async function generateAuthToken(apiKey: string, secretKey: string): Promise<string> {
+  const token = await createJWT(apiKey, secretKey, 1800);
   return `Bearer ${token}`;
 }
 
@@ -195,7 +194,7 @@ async function submitTask(
   options: KelingCreateImageOptions,
 ): Promise<KelingSubmitResponse> {
   const url = `${options.baseURL || BASE_URL}${endpoint}`;
-  const authToken = generateAuthToken(options.apiKey, options.secretKey);
+  const authToken = await generateAuthToken(options.apiKey, options.secretKey);
 
   log('Submitting task to: %s', url);
 
@@ -233,7 +232,7 @@ async function queryTaskStatus(
   options: KelingCreateImageOptions,
 ): Promise<KelingQueryResponse> {
   const url = `${options.baseURL || BASE_URL}${endpoint}/${taskId}`;
-  const authToken = generateAuthToken(options.apiKey, options.secretKey);
+  const authToken = await generateAuthToken(options.apiKey, options.secretKey);
 
   log('Querying task status for ID: %s', taskId);
 

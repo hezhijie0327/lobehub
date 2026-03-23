@@ -1,15 +1,40 @@
-import { createHmac, randomUUID } from 'node:crypto';
+import { nanoid } from 'nanoid';
 
-function base64UrlEncode(buffer: Buffer): string {
-  return buffer.toString('base64url').replaceAll('=', '');
+function base64UrlEncode(buffer: ArrayBuffer): string {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+    .replaceAll('=', '')
+    .replaceAll('+', '-')
+    .replaceAll('/', '_');
 }
 
 function base64UrlJsonEncode(obj: Record<string, any>): string {
   const json = JSON.stringify(obj);
-  return base64UrlEncode(Buffer.from(json, 'utf-8'));
+  const encoder = new TextEncoder();
+  const data = encoder.encode(json);
+  return base64UrlEncode(data.buffer);
 }
 
-export function createJWT(accessKey: string, secretKey: string, expiresIn: number = 1800): string {
+async function signJWT(data: string, secretKey: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secretKey);
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+  return base64UrlEncode(signature);
+}
+
+export async function createJWT(
+  accessKey: string,
+  secretKey: string,
+  expiresIn: number = 1800,
+): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
 
   const header = {
@@ -21,7 +46,7 @@ export function createJWT(accessKey: string, secretKey: string, expiresIn: numbe
     exp: now + expiresIn,
     iat: now,
     iss: accessKey,
-    jti: randomUUID(),
+    jti: nanoid(),
     nbf: now - 5,
   };
 
@@ -29,38 +54,7 @@ export function createJWT(accessKey: string, secretKey: string, expiresIn: numbe
   const encodedPayload = base64UrlJsonEncode(payload);
 
   const signatureInput = `${encodedHeader}.${encodedPayload}`;
-  const signature = createHmac('sha256', secretKey).update(signatureInput).digest('base64url');
+  const signature = await signJWT(signatureInput, secretKey);
 
   return `${encodedHeader}.${encodedPayload}.${signature}`;
-}
-
-export function verifyJWT(token: string, secretKey: string): { valid: boolean; payload?: any } {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return { valid: false };
-    }
-
-    const [encodedHeader, encodedPayload, signature] = parts;
-
-    const signatureInput = `${encodedHeader}.${encodedPayload}`;
-    const expectedSignature = createHmac('sha256', secretKey)
-      .update(signatureInput)
-      .digest('base64url');
-
-    if (signature !== expectedSignature) {
-      return { valid: false };
-    }
-
-    const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf-8'));
-
-    const now = Math.floor(Date.now() / 1000);
-    if (payload.exp < now) {
-      return { valid: false, payload };
-    }
-
-    return { valid: true, payload };
-  } catch {
-    return { valid: false };
-  }
 }
