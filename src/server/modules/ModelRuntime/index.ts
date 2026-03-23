@@ -8,6 +8,7 @@ import {
   type CloudflareKeyVault,
   type ComfyUIKeyVault,
   type GithubCopilotKeyVault,
+  type KelingKeyVault,
   type OpenAICompatibleKeyVault,
   type VertexAIKeyVault,
 } from '@lobechat/types';
@@ -33,6 +34,7 @@ type ProviderKeyVaults = OpenAICompatibleKeyVault &
   CloudflareKeyVault &
   ComfyUIKeyVault &
   GithubCopilotKeyVault &
+  KelingKeyVault &
   VertexAIKeyVault;
 
 /**
@@ -141,6 +143,15 @@ export const buildPayloadFromKeyVaults = (
           : undefined,
         oauthAccessToken: keyVaults.oauthAccessToken,
         runtimeProvider,
+      };
+    }
+
+    case ModelProvider.Keling: {
+      return {
+        apiKey: keyVaults.apiKey,
+        baseURL: keyVaults.baseURL,
+        runtimeProvider,
+        secretKey: keyVaults.secretKey,
       };
     }
 

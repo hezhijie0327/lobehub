@@ -34,8 +34,12 @@ export interface ClientSecretPayload {
    */
   oauthAccessToken?: string;
   password?: string;
-
   runtimeProvider?: string;
+
+  /**
+   * Keling specific authentication fields
+   */
+  secretKey?: string;
   /**
    * user id
    * in client db mode it's a uuid

@@ -72,3 +72,9 @@ export interface SearchEngineKeyVaults {
 export interface UserKeyVaults extends SearchEngineKeyVaults {
   search1api?: OpenAICompatibleKeyVault;
 }
+
+export interface KelingKeyVault {
+  apiKey?: string;
+  baseURL?: string;
+  secretKey?: string;
+}
