@@ -208,6 +208,21 @@ const getParamsFromPayload = (provider: string, payload: ClientSecretPayload) =>
       return { apiKey, baseURL };
     }
 
+    case ModelProvider.Keling: {
+      const { KELING_SECRET_KEY, KELING_ACCESS_KEY, KELING_PROXY_URL } = llmConfig;
+      let apiKey: string | undefined = KELING_ACCESS_KEY;
+      let secretKey: string | undefined = KELING_SECRET_KEY;
+      let baseURL: string | undefined = KELING_PROXY_URL;
+
+      if (payload.apiKey) {
+        apiKey = payload.apiKey;
+        secretKey = (payload as any).secretKey;
+        baseURL = payload.baseURL;
+      }
+
+      return { apiKey, baseURL, secretKey };
+    }
+
     case ModelProvider.Bedrock: {
       const { AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID, AWS_REGION, AWS_SESSION_TOKEN } = llmConfig;
       let accessKeyId: string | undefined = AWS_ACCESS_KEY_ID;

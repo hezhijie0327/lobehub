@@ -46,6 +46,9 @@ export const getServerGlobalConfig = async () => {
         enabledKey: 'ENABLED_AWS_BEDROCK',
         modelListKey: 'AWS_BEDROCK_MODEL_LIST',
       },
+      keling: {
+        enabledKey: 'ENABLED_KELING',
+      },
       giteeai: {
         enabledKey: 'ENABLED_GITEE_AI',
         modelListKey: 'GITEE_AI_MODEL_LIST',

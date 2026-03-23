@@ -11,7 +11,7 @@ const log = createDebug('lobe-image:keling');
 
 export class LobeKelingAI implements LobeRuntimeAI {
   baseURL?: string;
-  private accessKey: string;
+  private apiKey: string;
   private secretKey: string;
 
   constructor({ apiKey, baseURL, secretKey }: ClientOptions & { secretKey?: string } = {}) {
@@ -21,15 +21,15 @@ export class LobeKelingAI implements LobeRuntimeAI {
 
     if (!secretKey) {
       throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidProviderAPIKey, {
-        message: 'Keling requires both accessKey and secretKey',
+        message: 'Keling requires both apiKey and secretKey',
       });
     }
 
-    this.accessKey = apiKey;
+    this.apiKey = apiKey;
     this.secretKey = secretKey;
     this.baseURL = baseURL || undefined;
 
-    log('Keling AI initialized with accessKey: %s', apiKey.slice(0, 8) + '...');
+    log('Keling AI initialized with apiKey: %s', apiKey.slice(0, 8) + '...');
   }
 
   async createImage(payload: CreateImagePayload): Promise<CreateImageResponse> {
@@ -38,7 +38,7 @@ export class LobeKelingAI implements LobeRuntimeAI {
 
     try {
       return await createKelingImage(payload, {
-        accessKey: this.accessKey,
+        apiKey: this.apiKey,
         baseURL: this.baseURL,
         provider: 'keling',
         secretKey: this.secretKey,

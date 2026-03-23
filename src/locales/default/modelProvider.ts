@@ -47,6 +47,21 @@ export default {
   'bedrock.unlock.imageGenerationDescription':
     'Enter your AWS AccessKeyId / SecretAccessKey to start generating. The application will not store your authentication credentials.',
   'bedrock.unlock.title': 'Use Custom Bedrock Authentication Information',
+  'keling.accessKey.desc': 'Enter Keling Access Key',
+  'keling.accessKey.placeholder': 'Keling Access Key',
+  'keling.accessKey.title': 'Access Key',
+  'keling.checker.desc': 'Test if Access Key / Secret Key are filled in correctly',
+  'keling.secretKey.desc': 'Enter Keling Secret Key',
+  'keling.secretKey.placeholder': 'Keling Secret Key',
+  'keling.secretKey.title': 'Secret Key',
+  'keling.title': 'Keling',
+  'keling.unlock.description':
+    'Enter your Access Key and Secret Key to start the session. The app will not store your authentication configuration.',
+  'keling.unlock.imageGenerationDescription':
+    'Enter your Access Key and Secret Key to start generating. The application will not store your authentication credentials.',
+  'keling.unlock.title': 'Use Custom Keling Authentication Information',
+  'keling.unlock.accessKey.placeholder': 'Keling Access Key',
+  'keling.unlock.secretKey.placeholder': 'Keling Secret Key',
   'cloudflare.apiKey.desc': 'Please enter Cloudflare API Key',
   'cloudflare.apiKey.placeholder': 'Cloudflare API Key',
   'cloudflare.apiKey.title': 'Cloudflare API Key',

@@ -169,6 +169,11 @@ export const getLLMConfig = () => {
       ENABLED_INFINIAI: z.boolean(),
       INFINIAI_API_KEY: z.string().optional(),
 
+      ENABLED_KELING: z.boolean(),
+      KELING_PROXY_URL: z.string().optional(),
+      KELING_ACCESS_KEY: z.string().optional(),
+      KELING_SECRET_KEY: z.string().optional(),
+
       ENABLED_FAL: z.boolean(),
       FAL_API_KEY: z.string().optional(),
 
@@ -388,6 +393,11 @@ export const getLLMConfig = () => {
 
       ENABLED_INFINIAI: !!process.env.INFINIAI_API_KEY,
       INFINIAI_API_KEY: process.env.INFINIAI_API_KEY,
+
+      ENABLED_KELING: !!process.env.KELING_ACCESS_KEY && !!process.env.KELING_SECRET_KEY,
+      KELING_PROXY_URL: process.env.KELING_PROXY_URL,
+      KELING_ACCESS_KEY: process.env.KELING_ACCESS_KEY,
+      KELING_SECRET_KEY: process.env.KELING_SECRET_KEY,
 
       ENABLED_FAL: process.env.ENABLED_FAL !== '0',
       FAL_API_KEY: process.env.FAL_API_KEY,
