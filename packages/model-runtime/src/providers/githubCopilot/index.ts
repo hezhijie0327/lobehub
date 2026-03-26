@@ -2,9 +2,14 @@ import { type ChatModelCard } from '@lobechat/types';
 import { ModelProvider } from 'model-bank';
 import OpenAI from 'openai';
 
+import { responsesAPIModels } from '../../const/models';
 import { type LobeRuntimeAI } from '../../core/BaseAI';
-import { pruneReasoningPayload } from '../../core/contextBuilders/openai';
-import { OpenAIStream } from '../../core/streams';
+import {
+  convertOpenAIResponseInputs,
+  pruneReasoningPayload,
+} from '../../core/contextBuilders/openai';
+import { transformResponseAPIToStream } from '../../core/openaiCompatibleFactory';
+import { OpenAIResponsesStream, OpenAIStream } from '../../core/streams';
 import { type ChatMethodOptions, type ChatStreamPayload } from '../../types';
 import { AgentRuntimeErrorType } from '../../types/error';
 import { AgentRuntimeError } from '../../utils/createError';
@@ -167,8 +172,52 @@ export class LobeGithubCopilotAI implements LobeRuntimeAI {
       const { model, ...rest } = this.handlePayload(payload);
       const shouldStream = rest.stream !== false;
 
+      if (this.shouldUseResponsesAPI(model, (payload as any).apiMode)) {
+        const input = await convertOpenAIResponseInputs(rest.messages as any, {
+          strictToolPairing: true,
+        });
+
+        const responseTools = rest.tools?.map(this.convertChatCompletionToolToResponseTool);
+        const response = await client.responses.create(
+          {
+            input,
+            model,
+            stream: shouldStream,
+            ...(responseTools ? { tools: responseTools } : {}),
+          },
+          { signal: options?.signal },
+        );
+
+        if (shouldStream) {
+          return StreamingResponse(
+            OpenAIResponsesStream(response as any, {
+              callbacks: options?.callback,
+              payload: { model, provider: ModelProvider.GithubCopilot },
+            }),
+            { headers: options?.headers },
+          );
+        }
+
+        const responseStream = transformResponseAPIToStream(response as OpenAI.Responses.Response);
+
+        return StreamingResponse(
+          OpenAIResponsesStream(responseStream, {
+            callbacks: options?.callback,
+            enableStreaming: false,
+            payload: { model, provider: ModelProvider.GithubCopilot },
+          }),
+          { headers: options?.headers },
+        );
+      }
+
+      const { apiMode: _, ...cleanedRest } = rest as any;
+
       const response = await client.chat.completions.create(
-        { ...rest, model, stream: shouldStream } as OpenAI.ChatCompletionCreateParamsStreaming,
+        {
+          ...cleanedRest,
+          model,
+          stream: shouldStream,
+        } as OpenAI.ChatCompletionCreateParamsStreaming,
         { signal: options?.signal },
       );
 
@@ -223,6 +272,16 @@ export class LobeGithubCopilotAI implements LobeRuntimeAI {
 
     return { ...payload, stream: true };
   }
+
+  private shouldUseResponsesAPI(model: string, apiMode?: string): boolean {
+    if (apiMode === 'chatCompletion') return false;
+    if (apiMode === 'responses') return true;
+    return responsesAPIModels.has(model);
+  }
+
+  private convertChatCompletionToolToResponseTool = (tool: any): OpenAI.Responses.Tool => {
+    return { type: tool.type, ...tool.function } as any;
+  };
 
   private async executeWithRetry<T>(fn: () => Promise<T>): Promise<T> {
     let totalAttempts = 0;

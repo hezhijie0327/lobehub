@@ -19,6 +19,7 @@ const GithubCopilot: ModelProviderCard = {
     sdkType: 'openai',
     showApiKey: false,
     showChecker: true,
+    supportResponsesApi: true,
   },
   url: 'https://github.com/features/copilot',
 };

@@ -185,4 +185,64 @@ describe('LobeGithubCopilotAI', () => {
       expect(instance.baseURL).toBe('https://api.githubcopilot.com');
     });
   });
+
+  describe('responses api routing helpers', () => {
+    it('should use responses API for responses-only model', () => {
+      const instance = new LobeGithubCopilotAI({ apiKey: 'ghp_test' });
+
+      const shouldUse = (instance as any).shouldUseResponsesAPI('gpt-5.1-codex-mini');
+
+      expect(shouldUse).toBe(true);
+    });
+
+    it('should respect apiMode override to chatCompletion', () => {
+      const instance = new LobeGithubCopilotAI({ apiKey: 'ghp_test' });
+
+      const shouldUse = (instance as any).shouldUseResponsesAPI(
+        'gpt-5.1-codex-mini',
+        'chatCompletion',
+      );
+
+      expect(shouldUse).toBe(false);
+    });
+
+    it('should respect apiMode override to responses', () => {
+      const instance = new LobeGithubCopilotAI({ apiKey: 'ghp_test' });
+
+      const shouldUse = (instance as any).shouldUseResponsesAPI('gpt-4o', 'responses');
+
+      expect(shouldUse).toBe(true);
+    });
+
+    it('should convert chat completion tool to responses tool', () => {
+      const instance = new LobeGithubCopilotAI({ apiKey: 'ghp_test' });
+      const chatTool = {
+        function: {
+          description: 'Get weather',
+          name: 'get_weather',
+          parameters: {
+            properties: {
+              city: { type: 'string' },
+            },
+            type: 'object',
+          },
+        },
+        type: 'function',
+      };
+
+      const responseTool = (instance as any).convertChatCompletionToolToResponseTool(chatTool);
+
+      expect(responseTool).toEqual({
+        description: 'Get weather',
+        name: 'get_weather',
+        parameters: {
+          properties: {
+            city: { type: 'string' },
+          },
+          type: 'object',
+        },
+        type: 'function',
+      });
+    });
+  });
 });
