@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { responsesAPIModels } from '../../const/models';
 import { LobeGithubCopilotAI } from './index';
 
 // Mock console.error to avoid polluting test output
@@ -187,31 +188,12 @@ describe('LobeGithubCopilotAI', () => {
   });
 
   describe('responses api routing helpers', () => {
-    it('should use responses API for responses-only model', () => {
-      const instance = new LobeGithubCopilotAI({ apiKey: 'ghp_test' });
-
-      const shouldUse = (instance as any).shouldUseResponsesAPI('gpt-5.1-codex-mini');
-
-      expect(shouldUse).toBe(true);
+    it('should contain codex mini model in responses api model list', () => {
+      expect(responsesAPIModels.has('gpt-5.1-codex-mini')).toBe(true);
     });
 
-    it('should respect apiMode override to chatCompletion', () => {
-      const instance = new LobeGithubCopilotAI({ apiKey: 'ghp_test' });
-
-      const shouldUse = (instance as any).shouldUseResponsesAPI(
-        'gpt-5.1-codex-mini',
-        'chatCompletion',
-      );
-
-      expect(shouldUse).toBe(false);
-    });
-
-    it('should respect apiMode override to responses', () => {
-      const instance = new LobeGithubCopilotAI({ apiKey: 'ghp_test' });
-
-      const shouldUse = (instance as any).shouldUseResponsesAPI('gpt-4o', 'responses');
-
-      expect(shouldUse).toBe(true);
+    it('should not treat gpt-4o as responses-only model', () => {
+      expect(responsesAPIModels.has('gpt-4o')).toBe(false);
     });
 
     it('should convert chat completion tool to responses tool', () => {

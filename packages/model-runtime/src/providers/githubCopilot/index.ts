@@ -172,7 +172,7 @@ export class LobeGithubCopilotAI implements LobeRuntimeAI {
       const { model, ...rest } = this.handlePayload(payload);
       const shouldStream = rest.stream !== false;
 
-      if (this.shouldUseResponsesAPI(model, (payload as any).apiMode)) {
+      if (responsesAPIModels.has(model) || (payload as any).apiMode === 'responses') {
         const input = await convertOpenAIResponseInputs(rest.messages as any, {
           strictToolPairing: true,
         });
@@ -271,12 +271,6 @@ export class LobeGithubCopilotAI implements LobeRuntimeAI {
     }
 
     return { ...payload, stream: true };
-  }
-
-  private shouldUseResponsesAPI(model: string, apiMode?: string): boolean {
-    if (apiMode === 'chatCompletion') return false;
-    if (apiMode === 'responses') return true;
-    return responsesAPIModels.has(model);
   }
 
   private convertChatCompletionToolToResponseTool = (tool: any): OpenAI.Responses.Tool => {
