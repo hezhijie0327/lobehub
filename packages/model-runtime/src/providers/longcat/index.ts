@@ -1,14 +1,28 @@
 import { ModelProvider } from 'model-bank';
 
 import { createOpenAICompatibleRuntime } from '../../core/openaiCompatibleFactory';
+import { parseDataUri } from '../../utils/uriParser';
 
 export const LobeLongCatAI = createOpenAICompatibleRuntime({
   baseURL: 'https://api.longcat.chat/openai/v1',
   chatCompletion: {
     handlePayload: (payload) => {
-      const { frequency_penalty, presence_penalty, ...rest } = payload;
+      const { frequency_penalty, messages, model, presence_penalty, ...rest } = payload;
 
-      const messages = payload.messages?.map((message: any) => {
+      const omniMessages = messages?.map((message: any) => {
+        // If content is a string, convert to LongCat array format
+        if (typeof message?.content === 'string') {
+          return {
+            ...message,
+            content: [
+              {
+                text: message.content,
+                type: 'text',
+              },
+            ],
+          };
+        }
+
         if (!Array.isArray(message?.content)) return message;
 
         return {
@@ -26,12 +40,12 @@ export const LobeLongCatAI = createOpenAICompatibleRuntime({
 
               if (!imageUrl) return item;
 
-              const isUrl = imageUrl.startsWith('http');
+              const { type } = parseDataUri(imageUrl);
 
               return {
                 input_image: {
-                  data: isUrl ? [imageUrl] : imageUrl,
-                  type: isUrl ? 'url' : 'base64',
+                  data: type === 'url' ? [imageUrl] : imageUrl,
+                  type: type === 'url' ? 'url' : 'base64',
                 },
                 type: 'input_image',
               };
@@ -42,12 +56,12 @@ export const LobeLongCatAI = createOpenAICompatibleRuntime({
 
               if (!videoUrl) return item;
 
-              const isUrl = videoUrl.startsWith('http');
+              const { type } = parseDataUri(videoUrl);
 
               return {
                 input_video: {
                   data: videoUrl,
-                  type: isUrl ? 'url' : 'base64',
+                  type: type === 'url' ? 'url' : 'base64',
                 },
                 type: 'input_video',
               };
@@ -61,10 +75,11 @@ export const LobeLongCatAI = createOpenAICompatibleRuntime({
       return {
         ...rest,
         frequency_penalty: undefined,
-        messages,
+        model,
         presence_penalty: undefined,
-        // if payload.model contains omni, then add output_modalities and stream
-        ...(payload.model.includes('omni') ? { output_modalities: ['text'], stream: false } : {}),
+        ...(model.includes('omni')
+          ? { messages: omniMessages, output_modalities: ['text'], stream: false }
+          : { messages, stream: true }),
       } as any;
     },
   },
