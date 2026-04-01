@@ -757,7 +757,7 @@ describe('createQwenImage', () => {
           ],
         },
         model: 'qwen-image-edit',
-        parameters: {},
+        parameters: { n: 1 },
       });
     });
 
@@ -817,6 +817,143 @@ describe('createQwenImage', () => {
         expect.objectContaining({
           errorType: 'ProviderBizError',
           provider: 'qwen',
+        }),
+      );
+    });
+  });
+
+  describe('new image-generation route coverage', () => {
+    it('should use image-generation async API for kling model and parse choices result', async () => {
+      const mockTaskId = 'task-kling-123';
+      const mockImageUrl = 'https://p4-fdl.klingai.com/xxx.png?token=abc';
+
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            output: { task_id: mockTaskId },
+            request_id: 'req-kling-1',
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            output: {
+              choices: [
+                {
+                  message: {
+                    content: [{ image: mockImageUrl, type: 'image' }],
+                  },
+                },
+              ],
+              task_id: mockTaskId,
+              task_status: 'SUCCEEDED',
+            },
+            request_id: 'req-kling-2',
+          }),
+        });
+
+      const payload: CreateImagePayload = {
+        model: 'kling/kling-v3-omni-image-generation',
+        params: {
+          aspectRatio: '1:1',
+          imageUrls: ['https://cdn.example.com/ref-1.png', 'https://cdn.example.com/ref-2.png'],
+          prompt: '参考图1风格和图2背景生成番茄炒蛋',
+          resolution: '1k',
+        },
+      };
+
+      const result = await createQwenImage(payload, mockOptions);
+
+      expect(result).toEqual({ imageUrl: mockImageUrl });
+
+      const [firstUrl, firstOptions] = (fetch as any).mock.calls[0];
+      expect(firstUrl).toBe(
+        'https://dashscope.aliyuncs.com/api/v1/services/aigc/image-generation/generation',
+      );
+      expect(firstOptions).toEqual({
+        body: JSON.stringify({
+          input: {
+            messages: [
+              {
+                content: [
+                  { text: '参考图1风格和图2背景生成番茄炒蛋' },
+                  { image: 'https://cdn.example.com/ref-1.png' },
+                  { image: 'https://cdn.example.com/ref-2.png' },
+                ],
+                role: 'user',
+              },
+            ],
+          },
+          model: 'kling/kling-v3-omni-image-generation',
+          parameters: {
+            n: 1,
+            aspect_ratio: '1:1',
+            resolution: '1k',
+            size: '1024*1024',
+          },
+        }),
+        headers: {
+          'Authorization': 'Bearer test-api-key',
+          'Content-Type': 'application/json',
+          'X-DashScope-Async': 'enable',
+        },
+        method: 'POST',
+      });
+    });
+
+    it('should use multimodal-generation sync API for wan2.7 model', async () => {
+      const mockImageUrl = 'https://dashscope.oss-cn-beijing.aliyuncs.com/aigc/wan27-image.jpg';
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: mockImageUrl }],
+                },
+              },
+            ],
+          },
+          request_id: 'req-wan27-1',
+        }),
+      });
+
+      const payload: CreateImagePayload = {
+        model: 'wan2.7-image-pro',
+        params: {
+          height: 2048,
+          prompt: 'A futuristic city skyline',
+          seed: 123,
+          width: 2048,
+        },
+      };
+
+      const result = await createQwenImage(payload, mockOptions);
+
+      expect(result).toEqual({ imageUrl: mockImageUrl });
+
+      expect(fetch).toHaveBeenCalledWith(
+        'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
+        expect.objectContaining({
+          body: JSON.stringify({
+            input: {
+              messages: [
+                {
+                  content: [{ text: 'A futuristic city skyline' }],
+                  role: 'user',
+                },
+              ],
+            },
+            model: 'wan2.7-image-pro',
+            parameters: {
+              n: 1,
+              seed: 123,
+            },
+          }),
         }),
       );
     });
