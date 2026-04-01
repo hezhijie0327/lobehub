@@ -3109,6 +3109,54 @@ const qwenImageModels: AIImageModelCard[] = [
     type: 'image',
   },
   {
+    description: 'Wanxiang 2.7 Image Professional Edition, supports 4K high-definition output.',
+    displayName: 'Wanxiang2.7 Image Pro',
+    enabled: true,
+    id: 'wan2.7-image-pro',
+    organization: 'Qwen',
+    parameters: {
+      height: { default: 2048, max: 11_585, min: 271, step: 1 },
+      imageUrls: {
+        default: [],
+      },
+      prompt: {
+        default: '',
+      },
+      seed: { default: null },
+      width: { default: 2048, max: 11_585, min: 271, step: 1 },
+    },
+    pricing: {
+      currency: 'CNY',
+      units: [{ name: 'imageGeneration', rate: 0.5, strategy: 'fixed', unit: 'image' }],
+    },
+    releasedAt: '2026-04-01',
+    type: 'image',
+  },
+  {
+    description: 'Wanxiang 2.7 Image, faster image generation speed.',
+    displayName: 'Wanxiang2.7 Image',
+    enabled: true,
+    id: 'wan2.7-image',
+    organization: 'Qwen',
+    parameters: {
+      height: { default: 2048, max: 5792, min: 271, step: 1 },
+      imageUrls: {
+        default: [],
+      },
+      prompt: {
+        default: '',
+      },
+      seed: { default: null },
+      width: { default: 2048, max: 5792, min: 271, step: 1 },
+    },
+    pricing: {
+      currency: 'CNY',
+      units: [{ name: 'imageGeneration', rate: 0.2, strategy: 'fixed', unit: 'image' }],
+    },
+    releasedAt: '2026-04-01',
+    type: 'image',
+  },
+  {
     description: 'Wanxiang 2.6 Image supports image editing and mixed image–text layout output.',
     displayName: 'Wanxiang2.6 Image',
     enabled: true,
