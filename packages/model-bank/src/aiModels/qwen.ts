@@ -3373,6 +3373,66 @@ const qwenImageModels: AIImageModelCard[] = [
   },
   {
     description:
+      'Supports up to 10 reference images, allowing you to lock subjects, elements, and color tones to ensure consistent style. Combines style transfer, portrait/character referencing, multi-image fusion, and localized inpainting for flexible control. Delivers realistic portrait details, with overall visuals that are delicate and richly layered, featuring cinematic color and atmosphere.',
+    displayName: 'Kling V3 Image Generation',
+    enabled: true,
+    id: 'kling/kling-v3-image-generation',
+    organization: 'Qwen',
+    parameters: {
+      aspectRatio: {
+        default: '16:9',
+        enum: ['16:9', '9:16', '1:1'],
+      },
+      imageUrl: {
+        default: '',
+      },
+      prompt: {
+        default: '',
+      },
+      resolution: {
+        default: '1k',
+        enum: ['1k', '2k'],
+      },
+    },
+    pricing: {
+      currency: 'CNY',
+      units: [{ name: 'imageGeneration', rate: 0.2, strategy: 'fixed', unit: 'image' }],
+    },
+    releasedAt: '2026-03-26',
+    type: 'image',
+  },
+  {
+    description:
+      'Unlock cinematic storytelling visuals with new series image generation and direct 2K/4K output. Deeply analyzes audiovisual elements in prompts to precisely execute creative instructions. Supports flexible multi-reference inputs and comprehensive quality upgrades, ideal for storyboards, narrative concept art, and scene design.',
+    displayName: 'Kling V3 Omni Image Generation',
+    enabled: true,
+    id: 'kling/kling-v3-omni-image-generation',
+    organization: 'Qwen',
+    parameters: {
+      aspectRatio: {
+        default: '16:9',
+        enum: ['16:9', '9:16', '1:1'],
+      },
+      imageUrls: {
+        default: [],
+      },
+      prompt: {
+        default: '',
+      },
+      resolution: {
+        default: '1k',
+        enum: ['1k', '2k', '4k'],
+      },
+    },
+    pricing: {
+      currency: 'CNY',
+      units: [{ name: 'imageGeneration', rate: 0.2, strategy: 'fixed', unit: 'image' }],
+    },
+    releasedAt: '2026-03-26',
+    type: 'image',
+  },
+  {
+    description:
       'FLUX.1 [schnell] is the most advanced open-source few-step model, surpassing similar competitors and even strong non-distilled models like Midjourney v6.0 and DALL-E 3 (HD). It is finely tuned to preserve pretraining diversity, significantly improving visual quality, instruction following, size/aspect variation, font handling, and output diversity.',
     displayName: 'FLUX.1 [schnell]',
     id: 'flux-schnell',
