@@ -12,13 +12,14 @@ const text2ImageModels = [
   /^wan2\.(2|5)-t2i-/,
   /^wanx2\.(0|1)-t2i-/,
   /^wanx-v1/,
+  /^qwen-image(-plus)?$/,
   /^stable-diffusion-/,
   /^flux-/,
 ];
 
 const image2ImageModels = [/^wan2\.(2|5)-i2i-/];
 
-const asyncOnlyModels = [/^kling/];
+const syncOnlyModels = [/^qwen-image-(edit|max)/, /^qwen-image-2\.0/, /^z-image-turbo/];
 
 const imageRequiredModels = [/^qwen-image-edit/, /^wan2\.(2|5)-i2i-/, /^wan2\.6-image/];
 
@@ -406,7 +407,7 @@ export async function createQwenImage(
   try {
     const isText2Image = matchesModel(model, text2ImageModels);
     const isImage2Image = matchesModel(model, image2ImageModels);
-    const isAsyncGeneration = matchesModel(model, asyncOnlyModels);
+    const isSyncGeneration = matchesModel(model, syncOnlyModels);
 
     if (isText2Image || isImage2Image) {
       const endpoint = isImage2Image ? 'image2image' : 'text2image';
@@ -423,16 +424,16 @@ export async function createQwenImage(
       return await pollTaskToImageResponse(taskId, apiKey, dashscopeURL, model);
     }
 
-    if (isAsyncGeneration) {
-      log('Using image-generation async API for model: %s', model);
-
-      const taskId = await createHTTPAsyncGenerationTask(payload, apiKey, dashscopeURL);
-
-      return await pollTaskToImageResponse(taskId, apiKey, dashscopeURL, model);
+    if (isSyncGeneration) {
+      log('Using multimodal-generation API for model: %s', model);
+      return await createHTTPSyncGeneration(payload, apiKey, dashscopeURL);
     }
 
-    log('Using multimodal-generation API for model: %s', model);
-    return await createHTTPSyncGeneration(payload, apiKey, dashscopeURL);
+    log('Using image-generation async API for model: %s', model);
+
+    const taskId = await createHTTPAsyncGenerationTask(payload, apiKey, dashscopeURL);
+
+    return await pollTaskToImageResponse(taskId, apiKey, dashscopeURL, model);
   } catch (error) {
     log('Error in createQwenImage: %O', error);
 

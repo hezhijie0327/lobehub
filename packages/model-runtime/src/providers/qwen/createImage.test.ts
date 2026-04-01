@@ -903,24 +903,30 @@ describe('createQwenImage', () => {
       });
     });
 
-    it('should use multimodal-generation sync API for wan2.7 model', async () => {
+    it('should use image-generation async API for wan2.7 model', async () => {
+      const mockTaskId = 'task-wan27-1';
       const mockImageUrl = 'https://dashscope.oss-cn-beijing.aliyuncs.com/aigc/wan27-image.jpg';
 
-      global.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          output: {
-            choices: [
-              {
-                message: {
-                  content: [{ image: mockImageUrl }],
-                },
-              },
-            ],
-          },
-          request_id: 'req-wan27-1',
-        }),
-      });
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            output: { task_id: mockTaskId },
+            request_id: 'req-wan27-create',
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            output: {
+              results: [{ url: mockImageUrl }],
+              task_id: mockTaskId,
+              task_status: 'SUCCEEDED',
+            },
+            request_id: 'req-wan27-status',
+          }),
+        });
 
       const payload: CreateImagePayload = {
         model: 'wan2.7-image-pro',
@@ -936,26 +942,89 @@ describe('createQwenImage', () => {
 
       expect(result).toEqual({ imageUrl: mockImageUrl });
 
-      expect(fetch).toHaveBeenCalledWith(
-        'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
-        expect.objectContaining({
-          body: JSON.stringify({
-            input: {
-              messages: [
-                {
-                  content: [{ text: 'A futuristic city skyline' }],
-                  role: 'user',
-                },
-              ],
-            },
-            model: 'wan2.7-image-pro',
-            parameters: {
-              n: 1,
-              seed: 123,
-            },
-          }),
-        }),
+      const [createUrl, createOptions] = (fetch as any).mock.calls[0];
+
+      expect(createUrl).toBe(
+        'https://dashscope.aliyuncs.com/api/v1/services/aigc/image-generation/generation',
       );
+      expect(JSON.parse(createOptions.body)).toEqual({
+        input: {
+          messages: [
+            {
+              content: [{ text: 'A futuristic city skyline' }],
+              role: 'user',
+            },
+          ],
+        },
+        model: 'wan2.7-image-pro',
+        parameters: {
+          n: 1,
+          seed: 123,
+          size: '2048*2048',
+        },
+      });
+
+      expect(fetch).toHaveBeenCalledWith(
+        `https://dashscope.aliyuncs.com/api/v1/tasks/${mockTaskId}`,
+        {
+          headers: {
+            Authorization: 'Bearer test-api-key',
+          },
+        },
+      );
+    });
+
+    it('should use multimodal-generation sync API for sync-only model', async () => {
+      const mockImageUrl = 'https://dashscope.oss-cn-beijing.aliyuncs.com/aigc/sync-only-image.jpg';
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: mockImageUrl }],
+                },
+              },
+            ],
+          },
+          request_id: 'req-sync-only',
+        }),
+      });
+
+      const payload: CreateImagePayload = {
+        model: 'qwen-image-max',
+        params: {
+          prompt: 'A cinematic portrait',
+          seed: 42,
+        },
+      };
+
+      const result = await createQwenImage(payload, mockOptions);
+
+      expect(result).toEqual({ imageUrl: mockImageUrl });
+
+      const [syncUrl, syncOptions] = (fetch as any).mock.calls[0];
+
+      expect(syncUrl).toBe(
+        'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
+      );
+      expect(JSON.parse(syncOptions.body)).toEqual({
+        input: {
+          messages: [
+            {
+              content: [{ text: 'A cinematic portrait' }],
+              role: 'user',
+            },
+          ],
+        },
+        model: 'qwen-image-max',
+        parameters: {
+          n: 1,
+          seed: 42,
+        },
+      });
     });
   });
 });
