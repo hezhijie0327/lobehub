@@ -17,6 +17,7 @@ import { useChatStore } from '@/store/chat';
 
 import AgentSelectorAction from './AgentSelector/AgentSelectorAction';
 import CopilotModelSelector from './CopilotModelSelector';
+import RewritePromptAction from './RewritePromptAction';
 import CopilotToolbar from './Toolbar';
 import Welcome from './Welcome';
 
@@ -83,7 +84,15 @@ const Conversation = memo(() => {
     [handleAgentChange],
   );
 
-  const modelSelector = useMemo(() => <CopilotModelSelector />, []);
+  const modelSelector = useMemo(
+    () => (
+      <Flexbox horizontal align={'center'} gap={2}>
+        <CopilotModelSelector />
+        <RewritePromptAction />
+      </Flexbox>
+    ),
+    [],
+  );
 
   return (
     <DragUploadZone

@@ -252,6 +252,8 @@ export default {
   'owner': 'Group owner',
   'pageCopilot.title': 'Page Agent',
   'pageCopilot.welcome': `**Clearer, sharper writing**\n\nDraft, rewrite, or polish—tell me your intent and I'll refine the rest.`,
+  'pageCopilot.actions.rewritePrompt': 'Rewrite Prompt',
+  'pageCopilot.status.rewritingPrompt': 'Rewriting Prompt...',
   'pageSelection.lines': 'Lines {{start}}-{{end}}',
   'pageSelection.reference': 'Selected Text',
   'pin': 'Pin',
