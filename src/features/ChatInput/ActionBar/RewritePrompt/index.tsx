@@ -1,28 +1,27 @@
 'use client';
 
 import { chainRewriteGenerationPrompt } from '@lobechat/prompts';
-import { ActionIcon } from '@lobehub/ui';
 import { Sparkles } from 'lucide-react';
 import { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { conversationSelectors, useConversationStore } from '@/features/Conversation';
 import { chatService } from '@/services/chat';
 import { useUserStore } from '@/store/user';
 import { systemAgentSelectors, userGeneralSettingsSelectors } from '@/store/user/selectors';
 import { merge } from '@/utils/merge';
 
-const RewritePromptAction = memo(() => {
+import { useChatInputStore } from '../../store';
+import Action from '../components/Action';
+
+const RewritePrompt = memo(() => {
   const { t } = useTranslation('chat');
   const [isRewriting, setIsRewriting] = useState(false);
 
-  const rewriteConfig = useUserStore(systemAgentSelectors.queryRewrite);
-  const [editor, inputMessage] = useConversationStore((s) => [
-    conversationSelectors.editor(s),
-    conversationSelectors.inputMessage(s),
-  ]);
+  const rewriteConfig = useUserStore(systemAgentSelectors.promptRewrite);
+  const [editor, getMarkdownContent] = useChatInputStore((s) => [s.editor, s.getMarkdownContent]);
 
   const handleRewritePrompt = useCallback(async () => {
+    const inputMessage = getMarkdownContent();
     if (!inputMessage?.trim() || !editor) return;
 
     let rewrittenPrompt = '';
@@ -50,14 +49,13 @@ const RewritePromptAction = memo(() => {
         }),
       ),
     });
-  }, [editor, inputMessage, rewriteConfig]);
+  }, [editor, getMarkdownContent, rewriteConfig]);
 
   return (
-    <ActionIcon
-      disabled={!rewriteConfig.enabled || !inputMessage?.trim()}
+    <Action
+      disabled={!rewriteConfig.enabled || !getMarkdownContent()?.trim()}
       icon={Sparkles}
       loading={isRewriting}
-      size={{ blockSize: 28, size: 16 }}
       title={
         isRewriting
           ? t('pageCopilot.status.rewritingPrompt')
@@ -68,6 +66,6 @@ const RewritePromptAction = memo(() => {
   );
 });
 
-RewritePromptAction.displayName = 'RewritePromptAction';
+RewritePrompt.displayName = 'RewritePrompt';
 
-export default RewritePromptAction;
+export default RewritePrompt;

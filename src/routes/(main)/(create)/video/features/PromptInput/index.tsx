@@ -195,7 +195,7 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
   const isSupportGenerateAudio = useVideoStore(isSupportedParamSelector('generateAudio'));
   const isSupportCameraFixed = useVideoStore(isSupportedParamSelector('cameraFixed'));
   const isLogin = useUserStore(authSelectors.isLogin);
-  const rewriteConfig = useUserStore(systemAgentSelectors.queryRewrite);
+  const rewriteConfig = useUserStore(systemAgentSelectors.promptRewrite);
   const { value: duration } = useVideoGenerationConfigParam('duration');
   const [isRewriting, setIsRewriting] = useState(false);
   useFetchAiVideoConfig();

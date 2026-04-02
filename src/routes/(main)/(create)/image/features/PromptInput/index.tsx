@@ -80,7 +80,7 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
   const isSupportSteps = useImageStore(isSupportedParamSelector('steps'));
   const isSupportCfg = useImageStore(isSupportedParamSelector('cfg'));
   const isLogin = useUserStore(authSelectors.isLogin);
-  const rewriteConfig = useUserStore(systemAgentSelectors.queryRewrite);
+  const rewriteConfig = useUserStore(systemAgentSelectors.promptRewrite);
   const enabledImageModelList = useAiInfraStore(aiProviderSelectors.enabledImageModelList);
   const { showDimensionControl } = useDimensionControl();
   const { autoSetDimensions, extractUrlAndDimensions } = useAutoDimensions();
