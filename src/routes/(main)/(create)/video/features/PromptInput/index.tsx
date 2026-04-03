@@ -1,17 +1,17 @@
 'use client';
 
-import { chainRewriteGenerationPrompt } from '@lobechat/prompts';
 import { ModelIcon } from '@lobehub/icons';
 import { ActionIcon, Flexbox, InputNumber, Segmented, SliderWithInput, Text } from '@lobehub/ui';
 import { Divider, Switch } from 'antd';
 import { Clock3, Dices, Sparkles } from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import VideoFreeQuotaInfo from '@/business/client/features/VideoFreeQuotaInfo';
 import { loginRequired } from '@/components/Error/loginRequiredNotification';
 import Action from '@/features/ChatInput/ActionBar/components/Action';
 import ModelSwitchPanel from '@/features/ModelSwitchPanel';
+import { usePromptRewrite } from '@/features/PromptRewrite/usePromptRewrite';
 import { useFetchAiVideoConfig } from '@/hooks/useFetchAiVideoConfig';
 import { useIsDark } from '@/hooks/useIsDark';
 import { useQueryState } from '@/hooks/useQueryParam';
@@ -24,15 +24,12 @@ import {
 import { AspectRatioSelect } from '@/routes/(main)/(create)/image/features/ConfigPanel';
 import Select from '@/routes/(main)/(create)/image/features/ConfigPanel/components/Select';
 import VideoModelItem from '@/routes/(main)/(create)/video/features/ConfigPanel/components/ModelSelect/VideoModelItem';
-import { chatService } from '@/services/chat';
 import { aiProviderSelectors, useAiInfraStore } from '@/store/aiInfra';
 import { useUserStore } from '@/store/user';
-import { systemAgentSelectors, userGeneralSettingsSelectors } from '@/store/user/selectors';
 import { authSelectors } from '@/store/user/slices/auth/selectors';
 import { useVideoStore } from '@/store/video';
 import { createVideoSelectors, videoGenerationConfigSelectors } from '@/store/video/selectors';
 import { useVideoGenerationConfigParam } from '@/store/video/slices/generationConfig/hooks';
-import { merge } from '@/utils/merge';
 import { generateUniqueSeeds } from '@/utils/number';
 
 import PromptTitle from './Title';
@@ -133,7 +130,7 @@ const DurationItem = memo(() => {
 });
 
 const SeedItem = memo(() => {
-  const { t } = useTranslation('video');
+  const { t } = useTranslation(['video', 'common']);
   const { value, setValue } = useVideoGenerationConfigParam('seed');
 
   const handleRandomize = useCallback(() => {
@@ -195,9 +192,12 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
   const isSupportGenerateAudio = useVideoStore(isSupportedParamSelector('generateAudio'));
   const isSupportCameraFixed = useVideoStore(isSupportedParamSelector('cameraFixed'));
   const isLogin = useUserStore(authSelectors.isLogin);
-  const rewriteConfig = useUserStore(systemAgentSelectors.promptRewrite);
   const { value: duration } = useVideoGenerationConfigParam('duration');
-  const [isRewriting, setIsRewriting] = useState(false);
+  const { isRewriteDisabled, isRewriting, rewritePrompt } = usePromptRewrite({
+    mode: 'video',
+    onPromptChange: setValue as any,
+    prompt: value,
+  });
   useFetchAiVideoConfig();
 
   // Read prompt from query parameter
@@ -212,34 +212,6 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
 
     await createVideo();
   };
-
-  const handleRewritePrompt = useCallback(async () => {
-    if (!value?.trim()) return;
-
-    let rewrittenPrompt = '';
-
-    await chatService.fetchPresetTaskResult({
-      onError: () => {
-        setIsRewriting(false);
-      },
-      onFinish: async (text) => {
-        const nextPrompt = text.trim() || rewrittenPrompt.trim();
-        if (nextPrompt) setValue(nextPrompt as any);
-      },
-      onLoadingChange: setIsRewriting,
-      onMessageHandle: (chunk) => {
-        if (chunk.type === 'text') rewrittenPrompt += chunk.text;
-      },
-      params: merge(
-        rewriteConfig,
-        chainRewriteGenerationPrompt({
-          locale: userGeneralSettingsSelectors.currentResponseLanguage(useUserStore.getState()),
-          mode: 'video',
-          prompt: value,
-        }),
-      ),
-    });
-  }, [rewriteConfig, setValue, value]);
 
   // Auto-fill and auto-send when prompt query parameter is present
   useEffect(() => {
@@ -394,15 +366,15 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
           }
           rightActions={
             <Action
-              disabled={!rewriteConfig.enabled || !value?.trim()}
+              disabled={isRewriteDisabled}
               icon={Sparkles}
               loading={isRewriting}
               title={
                 isRewriting
-                  ? t('generation.status.rewritingPrompt')
-                  : t('generation.actions.rewritePrompt')
+                  ? t('rewritePrompt.status', { ns: 'common' })
+                  : t('rewritePrompt.action', { ns: 'common' })
               }
-              onClick={handleRewritePrompt}
+              onClick={rewritePrompt}
             />
           }
           onGenerate={handleGenerate}

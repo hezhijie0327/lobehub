@@ -1,67 +1,43 @@
 'use client';
 
-import { chainRewriteGenerationPrompt } from '@lobechat/prompts';
 import { Sparkles } from 'lucide-react';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { chatService } from '@/services/chat';
-import { useUserStore } from '@/store/user';
-import { systemAgentSelectors, userGeneralSettingsSelectors } from '@/store/user/selectors';
-import { merge } from '@/utils/merge';
+import { usePromptRewrite } from '@/features/PromptRewrite/usePromptRewrite';
 
 import { useChatInputStore } from '../../store';
 import Action from '../components/Action';
 
 const RewritePrompt = memo(() => {
-  const { t } = useTranslation('chat');
-  const [isRewriting, setIsRewriting] = useState(false);
+  const { t } = useTranslation(['chat', 'common']);
+  const [editor, markdownContent] = useChatInputStore((s) => [s.editor, s.markdownContent]);
 
-  const rewriteConfig = useUserStore(systemAgentSelectors.promptRewrite);
-  const [editor, getMarkdownContent] = useChatInputStore((s) => [s.editor, s.getMarkdownContent]);
+  const onPromptChange = useCallback(
+    (prompt: string) => {
+      if (!editor) return;
+      editor.setDocument('markdown', prompt);
+    },
+    [editor],
+  );
 
-  const handleRewritePrompt = useCallback(async () => {
-    const inputMessage = getMarkdownContent();
-    if (!inputMessage?.trim() || !editor) return;
-
-    let rewrittenPrompt = '';
-
-    await chatService.fetchPresetTaskResult({
-      onError: () => {
-        setIsRewriting(false);
-      },
-      onFinish: async (text) => {
-        const nextPrompt = text.trim() || rewrittenPrompt.trim();
-        if (!nextPrompt) return;
-
-        editor.setDocument('markdown', nextPrompt);
-      },
-      onLoadingChange: setIsRewriting,
-      onMessageHandle: (chunk) => {
-        if (chunk.type === 'text') rewrittenPrompt += chunk.text;
-      },
-      params: merge(
-        rewriteConfig,
-        chainRewriteGenerationPrompt({
-          locale: userGeneralSettingsSelectors.currentResponseLanguage(useUserStore.getState()),
-          mode: 'text',
-          prompt: inputMessage,
-        }),
-      ),
-    });
-  }, [editor, getMarkdownContent, rewriteConfig]);
+  const { isRewriteDisabled, isRewriting, rewritePrompt } = usePromptRewrite({
+    mode: 'text',
+    onPromptChange,
+    prompt: markdownContent,
+  });
 
   return (
     <Action
-      disabled={!rewriteConfig.enabled || !getMarkdownContent()?.trim()}
+      disabled={isRewriteDisabled}
       icon={Sparkles}
       loading={isRewriting}
       title={
         isRewriting
-          ? t('pageCopilot.status.rewritingPrompt')
-          : t('pageCopilot.actions.rewritePrompt')
+          ? t('rewritePrompt.status', { ns: 'common' })
+          : t('rewritePrompt.action', { ns: 'common' })
       }
-      onClick={handleRewritePrompt}
+      onClick={rewritePrompt}
     />
   );
 });

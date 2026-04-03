@@ -37,7 +37,6 @@ export default {
   'generation.actions.errorCopied': 'Error Message Copied to Clipboard',
   'generation.actions.errorCopyFailed': 'Failed to Copy Error Message',
   'generation.actions.generate': 'Generate',
-  'generation.actions.rewritePrompt': 'Rewrite Prompt',
   'generation.actions.promptCopied': 'Prompt Copied to Clipboard',
   'generation.actions.promptCopyFailed': 'Failed to Copy Prompt',
   'generation.actions.reuseSettings': 'Reuse Settings',
@@ -48,7 +47,6 @@ export default {
   'generation.metadata.count': '{{count}} Images',
   'generation.status.failed': 'Generation Failed',
   'generation.status.generating': 'Generating...',
-  'generation.status.rewritingPrompt': 'Rewriting Prompt...',
   'notSupportGuide.desc':
     'The current deployment mode does not support AI image generation. Switch to the <1>server database deployment mode</1>, or use <3>LobeHub Cloud</3>.',
   'notSupportGuide.features.fileIntegration.desc':

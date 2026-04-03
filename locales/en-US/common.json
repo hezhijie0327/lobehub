@@ -368,6 +368,8 @@
   "reset": "Reset",
   "restartToUpdate": "Restart to Update",
   "retry": "Retry",
+  "rewritePrompt.action": "Rewrite Prompt",
+  "rewritePrompt.status": "Rewriting Prompt...",
   "run": "Run",
   "save": "Save",
   "send": "Send",

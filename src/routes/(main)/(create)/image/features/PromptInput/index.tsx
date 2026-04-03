@@ -1,15 +1,15 @@
 'use client';
 
-import { chainRewriteGenerationPrompt } from '@lobechat/prompts';
 import { ModelIcon } from '@lobehub/icons';
 import { ActionIcon, Flexbox, Text } from '@lobehub/ui';
 import { Images, Sparkles } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { loginRequired } from '@/components/Error/loginRequiredNotification';
 import Action from '@/features/ChatInput/ActionBar/components/Action';
 import ModelSwitchPanel from '@/features/ModelSwitchPanel';
+import { usePromptRewrite } from '@/features/PromptRewrite/usePromptRewrite';
 import { useFetchAiImageConfig } from '@/hooks/useFetchAiImageConfig';
 import { useIsDark } from '@/hooks/useIsDark';
 import { useQueryState } from '@/hooks/useQueryParam';
@@ -31,7 +31,6 @@ import {
   useAutoDimensions,
 } from '@/routes/(main)/(create)/image/features/ConfigPanel';
 import ImageModelItem from '@/routes/(main)/(create)/image/features/ConfigPanel/components/ModelSelect/ImageModelItem';
-import { chatService } from '@/services/chat';
 import { aiProviderSelectors, useAiInfraStore } from '@/store/aiInfra';
 import { useImageStore } from '@/store/image';
 import { createImageSelectors, imageGenerationConfigSelectors } from '@/store/image/selectors';
@@ -40,9 +39,7 @@ import {
   useGenerationConfigParam,
 } from '@/store/image/slices/generationConfig/hooks';
 import { useUserStore } from '@/store/user';
-import { systemAgentSelectors, userGeneralSettingsSelectors } from '@/store/user/selectors';
 import { authSelectors } from '@/store/user/slices/auth/selectors';
-import { merge } from '@/utils/merge';
 
 import PromptTitle from './Title';
 
@@ -55,7 +52,7 @@ const isSupportedParamSelector = imageGenerationConfigSelectors.isSupportedParam
 
 const PromptInput = ({ showTitle = false }: PromptInputProps) => {
   const isDarkMode = useIsDark();
-  const { t } = useTranslation('image');
+  const { t } = useTranslation(['image', 'common']);
   const { value, setValue } = useGenerationConfigParam('prompt');
   const { value: imageUrl, setValue: setImageUrl } = useGenerationConfigParam('imageUrl');
   const {
@@ -80,11 +77,15 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
   const isSupportSteps = useImageStore(isSupportedParamSelector('steps'));
   const isSupportCfg = useImageStore(isSupportedParamSelector('cfg'));
   const isLogin = useUserStore(authSelectors.isLogin);
-  const rewriteConfig = useUserStore(systemAgentSelectors.promptRewrite);
   const enabledImageModelList = useAiInfraStore(aiProviderSelectors.enabledImageModelList);
   const { showDimensionControl } = useDimensionControl();
   const { autoSetDimensions, extractUrlAndDimensions } = useAutoDimensions();
-  const [isRewriting, setIsRewriting] = useState(false);
+
+  const { isRewriteDisabled, isRewriting, rewritePrompt } = usePromptRewrite({
+    mode: 'image',
+    onPromptChange: setValue as any,
+    prompt: value,
+  });
 
   useFetchAiImageConfig();
 
@@ -101,34 +102,6 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
 
     await createImage();
   };
-
-  const handleRewritePrompt = useCallback(async () => {
-    if (!value?.trim()) return;
-
-    let rewrittenPrompt = '';
-
-    await chatService.fetchPresetTaskResult({
-      onError: () => {
-        setIsRewriting(false);
-      },
-      onFinish: async (text) => {
-        const nextPrompt = text.trim() || rewrittenPrompt.trim();
-        if (nextPrompt) setValue(nextPrompt as any);
-      },
-      onLoadingChange: setIsRewriting,
-      onMessageHandle: (chunk) => {
-        if (chunk.type === 'text') rewrittenPrompt += chunk.text;
-      },
-      params: merge(
-        rewriteConfig,
-        chainRewriteGenerationPrompt({
-          locale: userGeneralSettingsSelectors.currentResponseLanguage(useUserStore.getState()),
-          mode: 'image',
-          prompt: value,
-        }),
-      ),
-    });
-  }, [rewriteConfig, setValue, value]);
 
   useEffect(() => {
     if (modelParam && !hasProcessedModel.current && isInit) {
@@ -320,15 +293,15 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
         }
         rightActions={
           <Action
-            disabled={!rewriteConfig.enabled || !value?.trim()}
+            disabled={isRewriteDisabled}
             icon={Sparkles}
             loading={isRewriting}
             title={
               isRewriting
-                ? t('generation.status.rewritingPrompt')
-                : t('generation.actions.rewritePrompt')
+                ? t('rewritePrompt.status', { ns: 'common' })
+                : t('rewritePrompt.action', { ns: 'common' })
             }
-            onClick={handleRewritePrompt}
+            onClick={rewritePrompt}
           />
         }
         onGenerate={handleGenerate}

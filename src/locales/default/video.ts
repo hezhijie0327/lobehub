@@ -17,14 +17,12 @@ export default {
   'generation.actions.errorCopied': 'Error Message Copied to Clipboard',
   'generation.actions.errorCopyFailed': 'Failed to Copy Error Message',
   'generation.actions.generate': 'Generate',
-  'generation.actions.rewritePrompt': 'Rewrite Prompt',
   'generation.freeQuota.exhausted': '🎁 Free quota used up, credits will be consumed',
   'generation.freeQuota.remaining': '🎁 {{remaining}} free videos today',
   'generation.validation.endFrameRequiresStartFrame':
     'End frame cannot be used without a start frame. Please set a start frame first.',
   'generation.status.failed': 'Generation Failed',
   'generation.status.generating': 'Generating...',
-  'generation.status.rewritingPrompt': 'Rewriting Prompt...',
   'topic.createNew': 'Create New Topic',
   'topic.deleteConfirm': 'Delete Video Topic',
   'topic.deleteConfirmDesc':

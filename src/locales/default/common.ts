@@ -279,6 +279,8 @@ export default {
   'copy': 'Copy',
   'copyFail': 'Copy failed',
   'copySuccess': 'Copied',
+  'rewritePrompt.action': 'Rewrite Prompt',
+  'rewritePrompt.status': 'Rewriting Prompt...',
   'dataStatistics.messages': 'Messages',
   'dataStatistics.sessions': 'Agents',
   'dataStatistics.today': "Today's New",
