@@ -3,7 +3,7 @@
 import { ModelIcon } from '@lobehub/icons';
 import { ActionIcon, Flexbox, InputNumber, Segmented, SliderWithInput, Text } from '@lobehub/ui';
 import { Divider, Switch } from 'antd';
-import { Clock3, Dices, Sparkles } from 'lucide-react';
+import { Clock3, Dices } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,7 @@ import VideoFreeQuotaInfo from '@/business/client/features/VideoFreeQuotaInfo';
 import { loginRequired } from '@/components/Error/loginRequiredNotification';
 import Action from '@/features/ChatInput/ActionBar/components/Action';
 import ModelSwitchPanel from '@/features/ModelSwitchPanel';
-import { usePromptRewrite } from '@/features/PromptRewrite/usePromptRewrite';
+import PromptTransformAction from '@/features/PromptRewrite/PromptTransformAction';
 import { useFetchAiVideoConfig } from '@/hooks/useFetchAiVideoConfig';
 import { useIsDark } from '@/hooks/useIsDark';
 import { useQueryState } from '@/hooks/useQueryParam';
@@ -193,11 +193,6 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
   const isSupportCameraFixed = useVideoStore(isSupportedParamSelector('cameraFixed'));
   const isLogin = useUserStore(authSelectors.isLogin);
   const { value: duration } = useVideoGenerationConfigParam('duration');
-  const { isRewriteDisabled, isRewriting, rewritePrompt } = usePromptRewrite({
-    mode: 'video',
-    onPromptChange: setValue as any,
-    prompt: value,
-  });
   useFetchAiVideoConfig();
 
   // Read prompt from query parameter
@@ -365,17 +360,7 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
             hasRefImages ? t('config.prompt.placeholderWithRef') : t('config.prompt.placeholder')
           }
           rightActions={
-            <Action
-              disabled={isRewriteDisabled}
-              icon={Sparkles}
-              loading={isRewriting}
-              title={
-                isRewriting
-                  ? t('rewritePrompt.status', { ns: 'common' })
-                  : t('rewritePrompt.action', { ns: 'common' })
-              }
-              onClick={rewritePrompt}
-            />
+            <PromptTransformAction mode={'video'} prompt={value} onPromptChange={setValue as any} />
           }
           onGenerate={handleGenerate}
           onValueChange={setValue}

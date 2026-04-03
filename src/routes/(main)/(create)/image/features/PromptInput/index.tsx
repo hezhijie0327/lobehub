@@ -2,14 +2,14 @@
 
 import { ModelIcon } from '@lobehub/icons';
 import { ActionIcon, Flexbox, Text } from '@lobehub/ui';
-import { Images, Sparkles } from 'lucide-react';
+import { Images } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { loginRequired } from '@/components/Error/loginRequiredNotification';
 import Action from '@/features/ChatInput/ActionBar/components/Action';
 import ModelSwitchPanel from '@/features/ModelSwitchPanel';
-import { usePromptRewrite } from '@/features/PromptRewrite/usePromptRewrite';
+import PromptTransformAction from '@/features/PromptRewrite/PromptTransformAction';
 import { useFetchAiImageConfig } from '@/hooks/useFetchAiImageConfig';
 import { useIsDark } from '@/hooks/useIsDark';
 import { useQueryState } from '@/hooks/useQueryParam';
@@ -80,12 +80,6 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
   const enabledImageModelList = useAiInfraStore(aiProviderSelectors.enabledImageModelList);
   const { showDimensionControl } = useDimensionControl();
   const { autoSetDimensions, extractUrlAndDimensions } = useAutoDimensions();
-
-  const { isRewriteDisabled, isRewriting, rewritePrompt } = usePromptRewrite({
-    mode: 'image',
-    onPromptChange: setValue as any,
-    prompt: value,
-  });
 
   useFetchAiImageConfig();
 
@@ -292,17 +286,7 @@ const PromptInput = ({ showTitle = false }: PromptInputProps) => {
           hasRefImages ? t('config.prompt.placeholderWithRef') : t('config.prompt.placeholder')
         }
         rightActions={
-          <Action
-            disabled={isRewriteDisabled}
-            icon={Sparkles}
-            loading={isRewriting}
-            title={
-              isRewriting
-                ? t('rewritePrompt.status', { ns: 'common' })
-                : t('rewritePrompt.action', { ns: 'common' })
-            }
-            onClick={rewritePrompt}
-          />
+          <PromptTransformAction mode={'image'} prompt={value} onPromptChange={setValue as any} />
         }
         onGenerate={handleGenerate}
         onValueChange={setValue}
