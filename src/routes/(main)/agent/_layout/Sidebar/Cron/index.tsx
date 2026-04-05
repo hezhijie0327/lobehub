@@ -26,10 +26,10 @@ const CronTopicList = memo<CronTopicListProps>(({ itemKey }) => {
     s.activeAgentId,
     s.useFetchCronTopicsWithJobInfo,
   ]);
-  const enableBusinessFeatures = useServerConfigStore(serverConfigSelectors.enableBusinessFeatures);
+  const enableCronJobs = useServerConfigStore(serverConfigSelectors.enableCronJobs);
   const { data: cronTopicsGroupsWithJobInfo = [], isLoading } = useFetchCronTopicsWithJobInfo(
     agentId,
-    enableBusinessFeatures,
+    enableCronJobs,
   );
 
   const handleCreateCronJob = useCallback(() => {
@@ -37,7 +37,7 @@ const CronTopicList = memo<CronTopicListProps>(({ itemKey }) => {
     router.push(urlJoin('/agent', agentId, 'cron', 'new'));
   }, [agentId, router]);
 
-  if (!enableBusinessFeatures) return null;
+  if (!enableCronJobs) return null;
 
   const addAction = (
     <ActionIcon

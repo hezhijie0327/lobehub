@@ -19,7 +19,7 @@ import AgentTool from './AgentTool';
 const ProfileEditor = memo(() => {
   const config = useAgentStore(agentSelectors.currentAgentConfig, isEqual);
   const updateConfig = useAgentStore((s) => s.updateAgentConfig);
-  const enableBusinessFeatures = useServerConfigStore(serverConfigSelectors.enableBusinessFeatures);
+  const enableCronJobs = useServerConfigStore(serverConfigSelectors.enableCronJobs);
 
   return (
     <>
@@ -55,7 +55,7 @@ const ProfileEditor = memo(() => {
       {/* Main Content: Prompt Editor */}
       <EditorCanvas />
       {/* Agent Cron Jobs Display (only show if jobs exist) */}
-      {enableBusinessFeatures && <AgentCronJobs />}
+      {enableCronJobs && <AgentCronJobs />}
       {/* Advanced Settings Modal */}
       <AgentSettings />
     </>

@@ -84,6 +84,7 @@ export const getServerGlobalConfig = async () => {
       appEnv.MARKET_TRUSTED_CLIENT_SECRET && appEnv.MARKET_TRUSTED_CLIENT_ID
     ),
     enableUploadFileToServer: !!fileEnv.S3_SECRET_ACCESS_KEY,
+    isQStashConfigured: appEnv.isQStashConfigured,
 
     image: cleanObject({
       defaultImageNum: imageEnv.AI_IMAGE_DEFAULT_IMAGE_NUM,

@@ -62,6 +62,7 @@ export interface GlobalServerConfig {
   enableMarketTrustedClient?: boolean;
   enableUploadFileToServer?: boolean;
   image?: PartialDeep<UserImageConfig>;
+  isQStashConfigured?: boolean;
   memory?: GlobalMemoryConfig;
   oAuthSSOProviders?: string[];
   systemAgent?: PartialDeep<UserSystemAgentConfig>;

@@ -4,8 +4,13 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { AgentCronJobModel } from '@/database/models/agentCronJob';
+import { appEnv } from '@/envs/app';
 import { authedProcedure, router } from '@/libs/trpc/lambda';
 import { serverDatabase } from '@/libs/trpc/lambda/middleware';
+import {
+  deleteCronJobSchedule,
+  upsertCronJobSchedule,
+} from '@/server/services/agentCron/qstashSchedule';
 
 const agentCronJobProcedure = authedProcedure.use(serverDatabase);
 
@@ -79,6 +84,10 @@ export const agentCronJobRouter = router({
         const cronJobData = { ...input, userId };
         const cronJob = await cronJobModel.create(cronJobData as InsertAgentCronJob);
 
+        if (appEnv.isQStashConfigured && cronJob.enabled) {
+          await upsertCronJobSchedule(cronJob.id);
+        }
+
         return {
           data: cronJob,
           message: 'Cron job created successfully',
@@ -105,6 +114,18 @@ export const agentCronJobRouter = router({
 
       try {
         const cronJobModel = new AgentCronJobModel(db, userId);
+        const existing = await cronJobModel.findById(id);
+        if (!existing) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Cron job not found or access denied',
+          });
+        }
+
+        if (appEnv.isQStashConfigured) {
+          await deleteCronJobSchedule(existing.id);
+        }
+
         const deleted = await cronJobModel.delete(id);
 
         if (!deleted) {
@@ -333,6 +354,15 @@ export const agentCronJobRouter = router({
 
       try {
         const cronJobModel = new AgentCronJobModel(db, userId);
+        const existing = await cronJobModel.findById(id);
+
+        if (!existing) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Cron job not found or access denied',
+          });
+        }
+
         const cronJob = await cronJobModel.update(id, data as UpdateAgentCronJob);
 
         if (!cronJob) {
@@ -340,6 +370,12 @@ export const agentCronJobRouter = router({
             code: 'NOT_FOUND',
             message: 'Cron job not found or access denied',
           });
+        }
+
+        if (appEnv.isQStashConfigured && !cronJob.enabled) {
+          await deleteCronJobSchedule(existing.id);
+        } else if (appEnv.isQStashConfigured) {
+          await upsertCronJobSchedule(cronJob.id);
         }
 
         return {
