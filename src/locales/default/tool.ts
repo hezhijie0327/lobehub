@@ -159,6 +159,8 @@ export default {
   'search.searchBar.placeholder': 'Keywords',
   'search.searchBar.tooltip':
     'This will refresh the search results and create a new summary message',
+  'search.searchProvider.placeholder': 'Search Provider',
+  'search.searchProvider.title': 'Search Provider:',
   'search.searchCategory.placeholder': 'Search Category',
   'search.searchCategory.title': 'Search Category:',
   'search.searchCategory.value.files': 'Files',

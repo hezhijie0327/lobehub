@@ -4,6 +4,68 @@ import dayjs from 'dayjs';
 import { systemPrompt } from './systemRole';
 import { WebBrowsingApiName } from './types';
 
+export const SEARCH_PROVIDER_ENUM = [
+  'anspire',
+  'bocha',
+  'brave',
+  'exa',
+  'firecrawl',
+  'google',
+  'jina',
+  'kagi',
+  'search1api',
+  'searxng',
+  'tavily',
+] as const;
+
+export const CRAWL_PROVIDER_ENUM = [
+  'browserless',
+  'exa',
+  'firecrawl',
+  'jina',
+  'naive',
+  'search1api',
+  'tavily',
+] as const;
+
+interface WebBrowsingManifestOptions {
+  crawlProvidersEnv?: string;
+  searchProvidersEnv?: string;
+}
+
+const parseProviderEnv = (envValue?: string) => {
+  return (envValue || '')
+    .replaceAll('，', ',')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const filterProviders = <T extends string>(availableProviders: readonly T[], envValue?: string) => {
+  const enabledProviders = new Set(parseProviderEnv(envValue));
+
+  return availableProviders.filter((provider) => enabledProviders.has(provider));
+};
+
+const updateProviderItems = <T extends string>(
+  properties: Record<string, any>,
+  key: 'crawlProvider' | 'searchProvider',
+  availableProviders: readonly T[],
+  envValue?: string,
+) => {
+  const configuredProviders = filterProviders(availableProviders, envValue);
+
+  if (configuredProviders.length > 0) {
+    properties[key] = {
+      ...(properties[key] as object),
+      enum: configuredProviders,
+      type: 'string',
+    };
+  } else {
+    delete properties[key];
+  }
+};
+
 export const WebBrowsingManifest: BuiltinToolManifest = {
   api: [
     {
@@ -23,6 +85,11 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
               type: 'string',
             },
             type: 'array',
+          },
+          searchProvider: {
+            description: 'The search provider you can use:',
+            enum: [],
+            type: 'string',
           },
           searchEngines: {
             description: 'The search engines you can use:',
@@ -67,6 +134,11 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
       name: WebBrowsingApiName.crawlSinglePage,
       parameters: {
         properties: {
+          crawlProvider: {
+            description: 'The crawl provider you can use:',
+            enum: [],
+            type: 'string',
+          },
           url: {
             description: 'The url need to be crawled',
             type: 'string',
@@ -82,6 +154,11 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
       name: WebBrowsingApiName.crawlMultiPages,
       parameters: {
         properties: {
+          crawlProvider: {
+            description: 'The crawl provider you can use:',
+            enum: [],
+            type: 'string',
+          },
           urls: {
             items: {
               description: 'The urls need to be crawled',
@@ -106,4 +183,50 @@ export const WebBrowsingManifest: BuiltinToolManifest = {
   },
   systemRole: systemPrompt(dayjs(new Date()).format('YYYY-MM-DD')),
   type: 'builtin',
+};
+
+export const createWebBrowsingManifest = (
+  options: WebBrowsingManifestOptions = {},
+): BuiltinToolManifest => {
+  const searchProviders = parseProviderEnv(options.searchProvidersEnv);
+  const crawlProviders = parseProviderEnv(options.crawlProvidersEnv);
+
+  const api = WebBrowsingManifest.api.map((apiItem) => {
+    const properties = { ...apiItem.parameters?.properties };
+
+    if ('searchProvider' in properties) {
+      updateProviderItems(
+        properties,
+        'searchProvider',
+        SEARCH_PROVIDER_ENUM,
+        options.searchProvidersEnv,
+      );
+    }
+
+    if ('crawlProvider' in properties) {
+      updateProviderItems(
+        properties,
+        'crawlProvider',
+        CRAWL_PROVIDER_ENUM,
+        options.crawlProvidersEnv,
+      );
+    }
+
+    return {
+      ...apiItem,
+      parameters: {
+        ...apiItem.parameters,
+        properties,
+      },
+    };
+  });
+
+  return {
+    ...WebBrowsingManifest,
+    api,
+    systemRole: systemPrompt(dayjs(new Date()).format('YYYY-MM-DD'), {
+      enabledCrawlProviders: crawlProviders,
+      enabledSearchProviders: searchProviders,
+    }),
+  };
 };

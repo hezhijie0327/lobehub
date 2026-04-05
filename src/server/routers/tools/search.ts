@@ -1,3 +1,4 @@
+import { CRAWL_PROVIDER_ENUM, SEARCH_PROVIDER_ENUM } from '@lobechat/builtin-tool-web-browsing';
 import { z } from 'zod';
 
 import { authedProcedure, router } from '@/libs/trpc/lambda';
@@ -9,10 +10,7 @@ export const searchRouter = router({
   crawlPages: searchProcedure
     .input(
       z.object({
-        impls: z
-          .enum(['browserless', 'exa', 'firecrawl', 'jina', 'naive', 'search1api', 'tavily'])
-          .array()
-          .optional(),
+        crawlProvider: z.enum(CRAWL_PROVIDER_ENUM).optional(),
         urls: z.string().array(),
       }),
     )
@@ -27,6 +25,7 @@ export const searchRouter = router({
           .object({
             searchCategories: z.array(z.string()).optional(),
             searchEngines: z.array(z.string()).optional(),
+            searchProvider: z.enum(SEARCH_PROVIDER_ENUM).optional(),
             searchTimeRange: z.string().optional(),
           })
           .optional(),
@@ -43,6 +42,7 @@ export const searchRouter = router({
         query: z.string(),
         searchCategories: z.array(z.string()).optional(),
         searchEngines: z.array(z.string()).optional(),
+        searchProvider: z.enum(SEARCH_PROVIDER_ENUM).optional(),
         searchTimeRange: z.string().optional(),
       }),
     )

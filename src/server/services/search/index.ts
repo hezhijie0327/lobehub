@@ -5,17 +5,28 @@ import pMap from 'p-map';
 
 import { toolsEnv } from '@/envs/tools';
 
-import { type SearchImplType, type SearchServiceImpl } from './impls';
-import { createSearchServiceImpl } from './impls';
+import type { SearchServiceImpl } from './impls';
+import { createSearchServiceImpl, SearchImplType } from './impls';
 
 const DEFAULT_CRAWL_CONCURRENCY = 3;
 const DEFAULT_CRAWLER_RETRY = 1;
 const log = debug('lobe-oom:web-browsing:search-service');
+const searchImplValues = new Set(Object.values(SearchImplType));
 
 const parseImplEnv = (envString: string = '') => {
   // Handle full-width commas and extra whitespace
   const envValue = envString.replaceAll('，', ',').trim();
   return envValue.split(',').filter(Boolean);
+};
+
+const normalizeSearchProvider = (provider?: string) => {
+  const normalizedProvider = provider?.trim();
+
+  if (!normalizedProvider) return undefined;
+
+  return searchImplValues.has(normalizedProvider as SearchImplType)
+    ? (normalizedProvider as SearchImplType)
+    : undefined;
 };
 
 const getMemorySnapshot = () => {
@@ -55,13 +66,13 @@ export class SearchService {
         : [createSearchServiceImpl()];
   }
 
-  async crawlPages(input: { impls?: CrawlImplType[]; urls: string[] }) {
+  async crawlPages(input: { crawlProvider?: CrawlImplType; urls: string[] }) {
     try {
       if (log.enabled) {
         log(
           'crawlPages:start urls=%d impls=%s mem=%s',
           input.urls.length,
-          (input.impls || this.crawlerImpls).join(',') || '-',
+          input.crawlProvider || this.crawlerImpls.join(',') || '-',
           getMemorySnapshot(),
         );
       }
@@ -73,7 +84,7 @@ export class SearchService {
     const results = await pMap(
       input.urls,
       async (url) => {
-        return await this.crawlWithRetry(crawler, url, input.impls);
+        return await this.crawlWithRetry(crawler, url, input.crawlProvider);
       },
       { concurrency: this.crawlConcurrency },
     );
@@ -84,7 +95,7 @@ export class SearchService {
   private async crawlWithRetry(
     crawler: Crawler,
     url: string,
-    impls?: CrawlImplType[],
+    crawlProvider?: CrawlImplType,
   ): Promise<CrawlUniformResult> {
     const maxAttempts = this.crawlerRetry + 1;
     let lastResult: CrawlUniformResult | undefined;
@@ -92,7 +103,10 @@ export class SearchService {
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const result = await crawler.crawl({ impls, url });
+        const result = await crawler.crawl({
+          impls: crawlProvider ? [crawlProvider] : undefined,
+          url,
+        });
         try {
           if (log.enabled) {
             log('crawlWithRetry:result crawler=%s mem=%s', result.crawler, getMemorySnapshot());
@@ -135,6 +149,12 @@ export class SearchService {
     return parseImplEnv(toolsEnv.SEARCH_PROVIDERS) as SearchImplType[];
   }
 
+  private getSearchImplList(searchProvider?: string) {
+    const normalizedProvider = normalizeSearchProvider(searchProvider);
+
+    return normalizedProvider ? [createSearchServiceImpl(normalizedProvider)] : this.searchImpList;
+  }
+
   /**
    * Query for search results using the specified impl
    */
@@ -157,15 +177,26 @@ export class SearchService {
    * Query for search results (uses the first provider)
    */
   async query(query: string, params?: SearchParams) {
-    return this.queryWithImpl(this.searchImpList[0], query, params);
+    const searchProvider = normalizeSearchProvider(params?.searchProvider);
+    const impl = searchProvider ? createSearchServiceImpl(searchProvider) : this.searchImpList[0];
+
+    return this.queryWithImpl(impl, query, params);
   }
 
-  async webSearch({ query, searchCategories, searchEngines, searchTimeRange }: SearchQuery) {
+  async webSearch({
+    query,
+    searchCategories,
+    searchEngines,
+    searchProvider,
+    searchTimeRange,
+  }: SearchQuery) {
+    const searchImplList = this.getSearchImplList(searchProvider);
+
     try {
       if (log.enabled) {
         log(
           'webSearch:start providers=%d q=%d c=%d e=%d mem=%s',
-          this.searchImpList.length,
+          searchImplList.length,
           query.length,
           searchCategories?.length || 0,
           searchEngines?.length || 0,
@@ -174,7 +205,7 @@ export class SearchService {
       }
     } catch {}
 
-    for (const impl of this.searchImpList) {
+    for (const impl of searchImplList) {
       try {
         if (log.enabled) {
           log(

@@ -19,6 +19,7 @@ import { useChatStore } from '@/store/chat';
 import { chatToolSelectors } from '@/store/chat/selectors';
 
 import { CATEGORY_ICON_MAP, ENGINE_ICON_MAP } from '../../const';
+import { SEARCH_PROVIDER_ENUM } from '../../manifest';
 import { CategoryAvatar } from './CategoryAvatar';
 import { EngineAvatar } from './EngineAvatar';
 
@@ -34,6 +35,7 @@ interface SearchBarProps {
   defaultCategories?: string[];
   defaultEngines?: string[];
   defaultQuery: string;
+  defaultSearchProvider?: string;
   defaultTimeRange?: string;
   messageId: string;
   onSearch?: (searchQuery: SearchQuery) => void;
@@ -45,6 +47,7 @@ const SearchBar = memo<SearchBarProps>(
   ({
     defaultCategories = [],
     defaultEngines = [],
+    defaultSearchProvider,
     defaultTimeRange,
     aiSummary = true,
     defaultQuery,
@@ -58,6 +61,7 @@ const SearchBar = memo<SearchBarProps>(
     const [query, setQuery] = useState(defaultQuery);
     const [categories, setCategories] = useState(defaultCategories);
     const [engines, setEngines] = useState(defaultEngines);
+    const [searchProvider, setSearchProvider] = useState<string | undefined>(defaultSearchProvider);
     const [time_range, setTimeRange] = useState(defaultTimeRange);
     const isMobile = useIsMobile();
     const [reSearchWithSearXNG] = useChatStore((s) => [s.triggerSearchAgain]);
@@ -67,6 +71,7 @@ const SearchBar = memo<SearchBarProps>(
         query,
         searchCategories: categories,
         searchEngines: engines,
+        searchProvider,
         searchTimeRange: time_range,
       };
       onSearch?.(data);
@@ -98,6 +103,40 @@ const SearchBar = memo<SearchBarProps>(
           {searchAddon}
         </Flexbox>
         <Block gap={24} padding={12} variant={'outlined'}>
+          {isMobile ? (
+            <Select
+              placeholder={t('search.searchProvider.placeholder')}
+              size={'small'}
+              value={searchProvider}
+              variant={'filled'}
+              options={SEARCH_PROVIDER_ENUM.map((item) => ({
+                label: item,
+                value: item,
+              }))}
+              onChange={(checkedValue) => {
+                setSearchProvider(checkedValue as string | undefined);
+              }}
+            />
+          ) : (
+            <Flexbox horizontal align={'flex-start'} gap={8}>
+              <Text className={styles.textHeader} type={'secondary'}>
+                {t('search.searchProvider.title')}
+              </Text>
+              <Select
+                allowClear
+                placeholder={t('search.searchProvider.placeholder')}
+                value={searchProvider}
+                options={SEARCH_PROVIDER_ENUM.map((item) => ({
+                  label: item,
+                  value: item,
+                }))}
+                onChange={(checkedValue) => {
+                  setSearchProvider(checkedValue as string | undefined);
+                }}
+              />
+            </Flexbox>
+          )}
+
           {isMobile ? (
             <Select
               mode={'multiple'}

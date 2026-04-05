@@ -37,7 +37,7 @@ describe('searchRouter', () => {
 
       const result = await caller.crawlPages({
         urls: ['http://test1.com', 'http://test2.com'],
-        impls: ['naive'],
+        crawlProvider: 'naive',
       });
 
       expect(result.results).toHaveLength(2);
@@ -60,13 +60,13 @@ describe('searchRouter', () => {
       for (const impl of allImpls) {
         const result = await caller.crawlPages({
           urls: ['http://test.com'],
-          impls: [impl],
+          crawlProvider: impl,
         });
         expect(result.results).toHaveLength(1);
       }
     });
 
-    it('should work without specifying impls', async () => {
+    it('should work without specifying crawlProvider', async () => {
       const caller = searchRouter.createCaller(mockContext as any);
 
       const result = await caller.crawlPages({

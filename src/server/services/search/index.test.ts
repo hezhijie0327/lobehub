@@ -98,6 +98,29 @@ describe('SearchService', () => {
       expect(mockSearchImpl.query).toHaveBeenCalledWith('test query', params);
     });
 
+    it('should use searchProvider override when provided', async () => {
+      const mockResponse = {
+        costTime: 100,
+        query: 'test query',
+        resultNumbers: 1,
+        results: [],
+      };
+      const overrideSearchImpl = {
+        query: vi.fn().mockResolvedValue(mockResponse),
+      };
+      vi.mocked(createSearchServiceImpl).mockReturnValueOnce(overrideSearchImpl as any);
+
+      const result = await searchService.query('test query', {
+        searchProvider: 'searxng',
+      });
+
+      expect(overrideSearchImpl.query).toHaveBeenCalledWith('test query', {
+        searchProvider: 'searxng',
+      });
+      expect(mockSearchImpl.query).not.toHaveBeenCalled();
+      expect(result).toBe(mockResponse);
+    });
+
     it('should return errorDetail instead of throwing when impl fails', async () => {
       mockSearchImpl.query.mockRejectedValue(new Error('Service unavailable'));
 
@@ -140,6 +163,38 @@ describe('SearchService', () => {
       });
 
       expect(mockSearchImpl.query).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockResponse);
+    });
+
+    it('should use searchProvider override when provided', async () => {
+      const mockResponse = {
+        costTime: 100,
+        query: 'test',
+        resultNumbers: 1,
+        results: [
+          {
+            category: 'general',
+            content: 'Result 1',
+            engines: ['google'],
+            parsedUrl: 'https://example.com',
+            score: 1,
+            title: 'Test 1',
+            url: 'https://example.com',
+          },
+        ],
+      };
+      const overrideSearchImpl = {
+        query: vi.fn().mockResolvedValue(mockResponse),
+      };
+      vi.mocked(createSearchServiceImpl).mockReturnValueOnce(overrideSearchImpl as any);
+
+      const result = await searchService.webSearch({
+        query: 'test',
+        searchProvider: 'searxng',
+      });
+
+      expect(overrideSearchImpl.query).toHaveBeenCalledTimes(1);
+      expect(mockSearchImpl.query).not.toHaveBeenCalled();
       expect(result).toBe(mockResponse);
     });
 
@@ -471,7 +526,7 @@ describe('SearchService', () => {
       expect(Crawler).toHaveBeenCalledWith({ impls: ['jina', 'reader'] });
     });
 
-    it('should pass impls parameter to crawler.crawl', async () => {
+    it('should pass crawlProvider parameter to crawler.crawl', async () => {
       const mockSuccessResult = {
         crawler: 'jina',
         data: { content: 'ok', contentType: 'text' },
@@ -485,7 +540,7 @@ describe('SearchService', () => {
       searchService = new SearchService();
 
       await searchService.crawlPages({
-        impls: ['jina'],
+        crawlProvider: 'jina',
         urls: ['https://example.com'],
       });
 

@@ -136,6 +136,8 @@
   "search.searchCategory.value.videos": "视频",
   "search.searchEngine.placeholder": "搜索引擎",
   "search.searchEngine.title": "搜索引擎：",
+  "search.searchProvider.placeholder": "搜索服务商",
+  "search.searchProvider.title": "搜索服务商：",
   "search.searchResult": "搜索数量：",
   "search.searchTimeRange.title": "时间范围：",
   "search.searchTimeRange.value.anytime": "时间不限",

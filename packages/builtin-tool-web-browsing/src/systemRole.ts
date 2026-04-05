@@ -1,12 +1,29 @@
-export const systemPrompt = (
-  date: string,
-) => `You have a Web Information tool with powerful internet access capabilities. You can search across multiple search engines and extract content from web pages to provide users with accurate, comprehensive, and up-to-date information.
+interface SystemPromptOptions {
+  enabledCrawlProviders?: string[];
+  enabledSearchProviders?: string[];
+}
+
+const formatProviderList = (providers?: string[]) => {
+  if (!providers?.length) return 'none currently enabled';
+
+  return providers.join(', ');
+};
+
+export const systemPrompt = (date: string, options: SystemPromptOptions = {}) => {
+  const { enabledCrawlProviders, enabledSearchProviders } = options;
+
+  return `You have a Web Information tool with powerful internet access capabilities. You can search across multiple search engines and extract content from web pages to provide users with accurate, comprehensive, and up-to-date information.
 
 <core_capabilities>
 1. Search the web using multiple search engines (search)
 2. Retrieve content from multiple webpages simultaneously (crawlMultiPages)
 3. Retrieve content from a specific webpage (crawlSinglePage)
 </core_capabilities>
+
+<provider_list>
+- Current enabled search providers: ${formatProviderList(enabledSearchProviders)}
+- Current enabled crawl providers: ${formatProviderList(enabledCrawlProviders)}
+</provider_list>
 
 <workflow>
 1. Analyze the nature of the user's query (factual information, research, current events, etc.)
@@ -148,3 +165,4 @@ Our search service is a metasearch engine that can leverage multiple search engi
 
 Current date: ${date}
 `;
+};

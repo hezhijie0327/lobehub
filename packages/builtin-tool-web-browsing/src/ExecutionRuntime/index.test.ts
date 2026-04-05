@@ -83,4 +83,61 @@ describe('WebBrowsingExecutionRuntime', () => {
       expect(result.content).toBe('Network error');
     });
   });
+
+  describe('crawlMultiPages', () => {
+    it('should forward crawlProvider to the search service', async () => {
+      const mockSearchService = {
+        crawlPages: vi.fn().mockResolvedValue({
+          results: [
+            {
+              crawler: 'browserless',
+              data: { content: 'Test content', contentType: 'text' },
+              originalUrl: 'https://example.com',
+            },
+          ],
+        }),
+        webSearch: vi.fn(),
+      };
+
+      const runtime = new WebBrowsingExecutionRuntime({ searchService: mockSearchService });
+      await runtime.crawlMultiPages({
+        crawlProvider: 'browserless',
+        urls: ['https://example.com'],
+      });
+
+      expect(mockSearchService.crawlPages).toHaveBeenCalledWith({
+        crawlProvider: 'browserless',
+        urls: ['https://example.com'],
+      });
+    });
+  });
+
+  describe('crawlSinglePage', () => {
+    it('should forward crawlProvider to crawlMultiPages flow', async () => {
+      const mockSearchService = {
+        crawlPages: vi.fn().mockResolvedValue({
+          results: [
+            {
+              crawler: 'browserless',
+              data: { content: 'Test content', contentType: 'text' },
+              originalUrl: 'https://example.com',
+            },
+          ],
+        }),
+        webSearch: vi.fn(),
+      };
+
+      const runtime = new WebBrowsingExecutionRuntime({ searchService: mockSearchService });
+
+      await runtime.crawlSinglePage({
+        crawlProvider: 'browserless',
+        url: 'https://example.com',
+      });
+
+      expect(mockSearchService.crawlPages).toHaveBeenCalledWith({
+        crawlProvider: 'browserless',
+        urls: ['https://example.com'],
+      });
+    });
+  });
 });

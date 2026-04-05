@@ -6,10 +6,19 @@ import { RemoteDeviceManifest } from '@lobechat/builtin-tool-remote-device';
 import { WebBrowsingManifest } from '@lobechat/builtin-tool-web-browsing';
 import { builtinTools } from '@lobechat/builtin-tools';
 import { ToolsEngine } from '@lobechat/context-engine';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { toolsEnv } from '@/envs/tools';
 
 import { createServerAgentToolsEngine, createServerToolsEngine } from '../index';
 import { type InstalledPlugin, type ServerAgentToolsContext } from '../types';
+
+vi.mock('@/envs/tools', () => ({
+  toolsEnv: {
+    CRAWLER_IMPLS: '',
+    SEARCH_PROVIDERS: '',
+  },
+}));
 
 // Mock installed plugins
 const mockInstalledPlugins: InstalledPlugin[] = [
@@ -75,6 +84,24 @@ const createMockContext = (
   ...overrides,
 });
 
+const mockToolsEnv = toolsEnv as {
+  CRAWLER_IMPLS: string;
+  SEARCH_PROVIDERS: string;
+};
+
+const defaultSearchProviders = mockToolsEnv.SEARCH_PROVIDERS;
+const defaultCrawlerImpls = mockToolsEnv.CRAWLER_IMPLS;
+
+beforeEach(() => {
+  mockToolsEnv.SEARCH_PROVIDERS = defaultSearchProviders;
+  mockToolsEnv.CRAWLER_IMPLS = defaultCrawlerImpls;
+});
+
+afterEach(() => {
+  mockToolsEnv.SEARCH_PROVIDERS = defaultSearchProviders;
+  mockToolsEnv.CRAWLER_IMPLS = defaultCrawlerImpls;
+});
+
 describe('createServerToolsEngine', () => {
   it('should return a ToolsEngine instance', () => {
     const context = createMockContext();
@@ -138,6 +165,45 @@ describe('createServerToolsEngine', () => {
 
     const availablePlugins = engine.getAvailablePlugins();
     expect(availablePlugins).toContain('additional-tool');
+  });
+
+  it('should filter WebBrowsing providers by env configuration', () => {
+    mockToolsEnv.SEARCH_PROVIDERS = 'searxng,exa';
+    mockToolsEnv.CRAWLER_IMPLS = 'jina,browserless';
+
+    const context = createMockContext();
+    const engine = createServerToolsEngine(context);
+    const manifest = engine.getPluginManifest(WebBrowsingManifest.identifier)!;
+
+    const searchApi = manifest.api.find((item) => item.name === 'search')!;
+    const crawlSingleApi = manifest.api.find((item) => item.name === 'crawlSinglePage')!;
+
+    expect((searchApi.parameters as any).properties.searchProvider.enum).toEqual([
+      'exa',
+      'searxng',
+    ]);
+    expect((crawlSingleApi.parameters as any).properties.crawlProvider.enum).toEqual([
+      'browserless',
+      'jina',
+    ]);
+    expect(manifest.systemRole).toContain('<provider_list>');
+    expect(manifest.systemRole).toContain('- Current enabled search providers: searxng, exa');
+    expect(manifest.systemRole).toContain('- Current enabled crawl providers: jina, browserless');
+  });
+
+  it('should remove provider options when env is not configured', () => {
+    mockToolsEnv.SEARCH_PROVIDERS = '';
+    mockToolsEnv.CRAWLER_IMPLS = '';
+
+    const context = createMockContext();
+    const engine = createServerToolsEngine(context);
+    const manifest = engine.getPluginManifest(WebBrowsingManifest.identifier)!;
+
+    const searchApi = manifest.api.find((item) => item.name === 'search')!;
+    const crawlSingleApi = manifest.api.find((item) => item.name === 'crawlSinglePage')!;
+
+    expect((searchApi.parameters as any).properties.searchProvider).toBeUndefined();
+    expect((crawlSingleApi.parameters as any).properties.crawlProvider).toBeUndefined();
   });
 });
 

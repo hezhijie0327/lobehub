@@ -5,6 +5,7 @@ import type { CrawlMultiPagesQuery } from '../crawler';
 export interface SearchParams {
   searchCategories?: string[];
   searchEngines?: string[];
+  searchProvider?: string;
   searchTimeRange?: string;
 }
 

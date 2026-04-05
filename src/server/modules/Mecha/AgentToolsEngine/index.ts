@@ -16,11 +16,16 @@ import { LocalSystemManifest } from '@lobechat/builtin-tool-local-system';
 import { MemoryManifest } from '@lobechat/builtin-tool-memory';
 import { MessageManifest } from '@lobechat/builtin-tool-message';
 import { RemoteDeviceManifest } from '@lobechat/builtin-tool-remote-device';
-import { WebBrowsingManifest } from '@lobechat/builtin-tool-web-browsing';
+import {
+  createWebBrowsingManifest,
+  WebBrowsingManifest,
+} from '@lobechat/builtin-tool-web-browsing';
 import { alwaysOnToolIds, builtinTools, defaultToolIds } from '@lobechat/builtin-tools';
 import { createEnableChecker, type LobeToolManifest } from '@lobechat/context-engine';
 import { ToolsEngine } from '@lobechat/context-engine';
 import debug from 'debug';
+
+import { toolsEnv } from '@/envs/tools';
 
 import {
   type ServerAgentToolsContext,
@@ -58,7 +63,16 @@ export const createServerToolsEngine = (
     .filter(Boolean);
 
   // Get all builtin tool manifests
-  const builtinManifests = builtinTools.map((tool) => tool.manifest as LobeToolManifest);
+  const builtinManifests = builtinTools.map((tool) => {
+    if (tool.identifier === WebBrowsingManifest.identifier) {
+      return createWebBrowsingManifest({
+        crawlProvidersEnv: toolsEnv.CRAWLER_IMPLS,
+        searchProvidersEnv: toolsEnv.SEARCH_PROVIDERS,
+      });
+    }
+
+    return tool.manifest as LobeToolManifest;
+  });
 
   // Combine all manifests
   const allManifests = [...pluginManifests, ...builtinManifests, ...additionalManifests];

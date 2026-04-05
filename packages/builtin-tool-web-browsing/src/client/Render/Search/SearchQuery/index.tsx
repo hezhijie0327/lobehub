@@ -28,11 +28,13 @@ const SearchQueryView = memo<SearchQueryViewProps>(
 
     const engines = uniq(searchResults.flatMap((result) => result.engines));
     const defaultEngines = engines.length > 0 ? engines : args.searchEngines || [];
+    const defaultSearchProvider = args.searchProvider;
 
     return editing ? (
       <SearchBar
         defaultEngines={defaultEngines}
         defaultQuery={args?.query}
+        defaultSearchProvider={defaultSearchProvider}
         messageId={messageId}
         searchAddon={
           <ActionIcon

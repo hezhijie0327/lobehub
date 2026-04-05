@@ -136,6 +136,8 @@
   "search.searchCategory.value.videos": "Videos",
   "search.searchEngine.placeholder": "Search Engine",
   "search.searchEngine.title": "Search Engine:",
+  "search.searchProvider.placeholder": "Search Provider",
+  "search.searchProvider.title": "Search Provider:",
   "search.searchResult": "Number of searches:",
   "search.searchTimeRange.title": "Time Range:",
   "search.searchTimeRange.value.anytime": "Anytime",

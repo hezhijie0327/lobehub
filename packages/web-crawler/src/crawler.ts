@@ -48,7 +48,13 @@ export class Crawler {
     let finalCrawler: string | undefined;
     let finalError: Error | undefined;
 
-    const systemImpls = (ruleImpls ?? this.impls) as CrawlImplType[];
+    // Determine which implementations to use based on rule and user input
+    const filteredRuleImpls = ruleImpls
+      ? (ruleImpls.filter((impl) => this.impls.includes(impl as CrawlImplType)) as CrawlImplType[])
+      : undefined;
+    const systemImpls = (
+      filteredRuleImpls?.length ? filteredRuleImpls : this.impls
+    ) as CrawlImplType[];
 
     const finalImpls = userImpls
       ? (userImpls.filter((impl) => Object.keys(crawlImpls).includes(impl)) as CrawlImplType[])
