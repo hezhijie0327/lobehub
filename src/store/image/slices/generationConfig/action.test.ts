@@ -24,6 +24,7 @@ vi.mock('@/store/user/slices/settings/selectors', () => ({
 // Test fixtures
 const customModelSchema: ModelParamsSchema = {
   prompt: { default: '' },
+  imageUrls: { default: [] },
   width: { default: 1024, min: 256, max: 2048, step: 64 },
   height: { default: 1024, min: 256, max: 2048, step: 64 },
   steps: { default: 20, min: 1, max: 50 },
@@ -195,22 +196,27 @@ describe('GenerationConfigAction', () => {
       expect(result.current.parametersSchema).toEqual(customModelSchema);
     });
 
-    it('should completely replace parameters when switching models', () => {
+    it('should preserve prompt and image inputs when switching models', () => {
       const { result } = renderHook(() => useImageStore());
 
       // Set some custom parameters
       act(() => {
         result.current.setParamOnInput('prompt', 'custom prompt');
+        result.current.setParamOnInput('imageUrls', ['custom-image-1.png']);
         result.current.setParamOnInput('steps', 50);
       });
 
       // Switch model
       act(() => {
-        result.current.setModelAndProviderOnSelect('flux/schnell', 'fal');
+        result.current.setModelAndProviderOnSelect('custom-model', 'custom-provider');
       });
 
-      expect(result.current.parameters).toEqual(fluxSchnellDefaultValues);
-      expect(result.current.parameters?.prompt).toBe('');
+      expect(result.current.parameters).toEqual({
+        ...customModelDefaultValues,
+        prompt: 'custom prompt',
+        imageUrls: ['custom-image-1.png'],
+      });
+      expect(result.current.parameters?.steps).toBe(customModelDefaultValues.steps);
     });
   });
 
