@@ -70,11 +70,40 @@ function preserveImageInputParams(
   nextDefaultValues: RuntimeImageGenParams,
   nextSchema: ModelParamsSchema,
 ) {
-  return preserveSupportedParams(previousParameters, nextDefaultValues, nextSchema, [
+  const result = preserveSupportedParams(previousParameters, nextDefaultValues, nextSchema, [
     'prompt',
     'imageUrl',
     'imageUrls',
   ]);
+
+  // Smart conversion: multi-image ↔ single-image model switching
+  const { imageUrl, imageUrls } = previousParameters;
+  const supportsImageUrl = 'imageUrl' in nextSchema;
+  const supportsImageUrls = 'imageUrls' in nextSchema;
+
+  // Case 1: Multi-image → Single-image (imageUrls[0] → imageUrl)
+  if (
+    Array.isArray(imageUrls) &&
+    imageUrls.length > 0 &&
+    !supportsImageUrls &&
+    supportsImageUrl &&
+    !result.imageUrl
+  ) {
+    (result as RuntimeImageGenParams).imageUrl = imageUrls[0];
+  }
+
+  // Case 2: Single-image → Multi-image (imageUrl → [imageUrl])
+  if (
+    typeof imageUrl === 'string' &&
+    imageUrl.length > 0 &&
+    !supportsImageUrl &&
+    supportsImageUrls &&
+    !result.imageUrls
+  ) {
+    (result as RuntimeImageGenParams).imageUrls = [imageUrl];
+  }
+
+  return result;
 }
 
 type Setter = StoreSetter<ImageStore>;
