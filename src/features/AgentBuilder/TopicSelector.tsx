@@ -1,7 +1,6 @@
 import { ActionIcon, type DropdownItem, DropdownMenu, Flexbox, Icon } from '@lobehub/ui';
 import { App } from 'antd';
 import { createStaticStyles } from 'antd-style';
-import dayjs from 'dayjs';
 import { Clock3Icon, MoreHorizontalIcon, PlusIcon, Trash2 } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,12 +13,7 @@ import { useChatStore } from '@/store/chat';
 import { topicSelectors } from '@/store/chat/slices/topic/selectors';
 import { topicMapKey } from '@/store/chat/utils/topicMapKey';
 
-const styles = createStaticStyles(({ css, cssVar }) => ({
-  time: css`
-    margin-inline-start: 6px;
-    font-size: 12px;
-    color: ${cssVar.colorTextTertiary};
-  `,
+const styles = createStaticStyles(({ css }) => ({
   title: css`
     overflow: hidden;
 
@@ -91,11 +85,6 @@ const TopicSelector = memo<TopicSelectorProps>(({ agentId, disabled }) => {
   const items = useMemo<DropdownItem[]>(
     () =>
       (topics || []).map((topic) => {
-        const displayTime =
-          dayjs().diff(dayjs(topic.updatedAt), 'd') < 7
-            ? dayjs(topic.updatedAt).fromNow()
-            : dayjs(topic.updatedAt).format('YYYY-MM-DD');
-
         const topicActions: DropdownItem[] = [
           {
             danger: true,
@@ -122,9 +111,8 @@ const TopicSelector = memo<TopicSelectorProps>(({ agentId, disabled }) => {
           ),
           key: topic.id,
           label: (
-            <Flexbox horizontal align="center" gap={4} justify="space-between" width="100%">
+            <Flexbox horizontal align="center" gap={4} width="100%">
               <span className={styles.title}>{topic.title}</span>
-              <span className={styles.time}>{displayTime}</span>
             </Flexbox>
           ),
           onClick: () => {
