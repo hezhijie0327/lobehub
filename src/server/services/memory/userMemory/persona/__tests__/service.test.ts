@@ -37,6 +37,8 @@ vi.mock('@/server/globalConfig/parseMemoryExtractionConfig', () => ({
       model: 'gpt-mock',
       provider: 'openai',
     },
+    agentLayerExtractorPreferredModels: ['gpt-mock'],
+    agentLayerExtractorPreferredProviders: ['openai'],
     agentPersonaWriter: {
       apiKey: 'test-key',
       baseURL: 'https://example.com',
@@ -44,6 +46,8 @@ vi.mock('@/server/globalConfig/parseMemoryExtractionConfig', () => ({
       model: 'gpt-mock',
       provider: 'openai',
     },
+    agentPersonaWriterPreferredModels: ['gpt-mock'],
+    agentPersonaWriterPreferredProviders: ['openai'],
   }),
 }));
 
@@ -131,6 +135,22 @@ describe('UserPersonaService', () => {
     expect(toolCall).toHaveBeenLastCalledWith(
       expect.objectContaining({
         existingPersona: '# Persona',
+      }),
+    );
+  });
+
+  it('passes persona writer preferred lists to runtime resolution', async () => {
+    const service = new UserPersonaService(db);
+
+    await service.composeWriting({ userId, username: 'User' });
+
+    expect(aiInfraMocks.tryMatchingProviderFrom).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        fallbackProvider: 'openai',
+        modelId: 'gpt-mock',
+        preferredModels: ['gpt-mock'],
+        preferredProviders: ['openai'],
       }),
     );
   });
