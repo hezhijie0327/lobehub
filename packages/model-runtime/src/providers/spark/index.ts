@@ -29,9 +29,11 @@ export const params = {
   baseURL: 'https://spark-api-open.xf-yun.com/v1',
   chatCompletion: {
     handlePayload: (payload: ChatStreamPayload, options) => {
-      const { enabledSearch, thinking, tools, ...rest } = payload;
+      const { deploymentName, enabledSearch, model, thinking, tools, ...rest } = payload;
 
-      const baseURL = getBaseURLByModel(payload.model);
+      const requestModel = deploymentName ?? model;
+
+      const baseURL = getBaseURLByModel(model);
       if (options) options.baseURL = baseURL;
 
       const sparkTools = enabledSearch
@@ -52,6 +54,7 @@ export const params = {
 
       return {
         ...rest,
+        model: requestModel,
         thinking: { type: thinking?.type },
         tools: sparkTools,
       } as any;
