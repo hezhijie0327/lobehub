@@ -1748,13 +1748,91 @@ const qwenChatModels: AIChatModelCard[] = [
       vision: true,
     },
     config: {
+      deploymentName: 'qwen3.7-plus', // Supports context caching
+    },
+    contextWindowTokens: 1_000_000,
+    description:
+      'The Qwen3.7 series high cost-performance Plus models comprehensively upgrade their vision-language capabilities while retaining their strong text understanding and generation abilities, as well as full agentic capabilities in coding, tool use, and productivity workflows. Their core strength lies in multimodal interactive agent intelligence, enabling them to: Perceive and understand real-world environments, Read screens and operate graphical user interfaces (GUIs), Generate code based on visual references, Navigate and interact with mobile applications end-to-end.',
+    displayName: 'Qwen3.7 Plus',
+    enabled: true,
+    id: 'qwen3.7-plus',
+    maxOutput: 65_536,
+    organization: 'Qwen',
+    pricing: {
+      currency: 'CNY',
+      units: [
+        {
+          lookup: {
+            prices: {
+              '[0, 0.256]': 2 * 0.1,
+              '[0.256, infinity]': 6 * 0.1,
+            },
+            pricingParams: ['textInputRange'],
+          },
+          name: 'textInput_cacheRead',
+          strategy: 'lookup',
+          unit: 'millionTokens',
+        },
+        {
+          lookup: {
+            prices: {
+              '[0, 0.256]': 2 * 1.25,
+              '[0.256, infinity]': 6 * 1.25,
+            },
+            pricingParams: ['textInputRange'],
+          },
+          name: 'textInput_cacheWrite',
+          strategy: 'lookup',
+          unit: 'millionTokens',
+        },
+        {
+          lookup: {
+            prices: {
+              '[0, 0.256]': 2,
+              '[0.256, infinity]': 6,
+            },
+            pricingParams: ['textInputRange'],
+          },
+          name: 'textInput',
+          strategy: 'lookup',
+          unit: 'millionTokens',
+        },
+        {
+          lookup: {
+            prices: {
+              '[0, 0.256]': 8,
+              '[0.256, infinity]': 24,
+            },
+            pricingParams: ['textInputRange'],
+          },
+          name: 'textOutput',
+          strategy: 'lookup',
+          unit: 'millionTokens',
+        },
+      ],
+    },
+    releasedAt: '2026-06-01',
+    settings: {
+      extendParams: ['enableReasoning', 'reasoningBudgetToken'],
+      searchImpl: 'params',
+    },
+    type: 'chat',
+  },
+  {
+    abilities: {
+      functionCall: true,
+      reasoning: true,
+      search: true,
+      video: true,
+      vision: true,
+    },
+    config: {
       deploymentName: 'qwen3.6-plus', // Supports context caching
     },
     contextWindowTokens: 1_000_000,
     description:
       'Qwen 3.6-Plus introduces major upgrades in coding capabilities, with a focus on Agentic Coding and front-end development, significantly enhancing the Vibe Coding experience. Its reasoning ability across general scenarios has been further improved. In terms of multimodality, capabilities such as universal recognition, OCR, and object localization have been substantially enhanced. It also fixes known issues from the Qwen 3.5-Plus release. Usage remains the same as Qwen 3.5-Plus.',
     displayName: 'Qwen3.6 Plus',
-    enabled: true,
     id: 'qwen3.6-plus',
     maxOutput: 65_536,
     organization: 'Qwen',
