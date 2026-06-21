@@ -128,7 +128,15 @@ export class LobeGoogleAI implements LobeRuntimeAI {
     if (!apiKey) throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidProviderAPIKey);
 
     const httpOptions = baseURL
-      ? ({ baseUrl: baseURL, headers: defaultHeaders } as HttpOptions)
+      ? ({
+          baseUrl: baseURL,
+          headers: {
+            ...defaultHeaders,
+            ...(baseURL === 'https://aihubmix.com/gemini' && {
+              'APP-Code': 'LobeHub',
+            }),
+          },
+        } as HttpOptions)
       : undefined;
 
     this.apiKey = apiKey;

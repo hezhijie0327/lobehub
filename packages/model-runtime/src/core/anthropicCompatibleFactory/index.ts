@@ -487,6 +487,7 @@ export const createAnthropicCompatibleRuntime = <T extends Record<string, any> =
       const {
         apiKey: finalApiKey,
         baseURL: finalBaseURL = DEFAULT_BASE_URL,
+        defaultHeaders,
         ...rest
       } = resolvedOptions;
       this._options = resolvedOptions as ConstructorOptions<T>;
@@ -497,6 +498,12 @@ export const createAnthropicCompatibleRuntime = <T extends Record<string, any> =
       const initOptions = {
         apiKey: finalApiKey,
         baseURL: finalBaseURL,
+        defaultHeaders: {
+          ...defaultHeaders,
+          ...(finalBaseURL === 'https://aihubmix.com' && {
+            'APP-Code': 'LobeHub',
+          }),
+        },
         ...constructorOptions,
         ...rest,
         timeout: rest.timeout ?? constructorOptions?.timeout ?? resolveDefaultAnthropicTimeout(),
